@@ -63,6 +63,7 @@ tick = 0
 -- current block sprite positions
 sprites = {}
 animals = {}
+blocks = {}
 
 function _init()
 	state.lvl = 2 -- debugging
@@ -75,9 +76,11 @@ function _init()
 	for i = 1, dimensions do
 		sprites[i] = {}
 		animals[i] = {}
+		blocks[i] = {}
 		for j = 1, dimensions do
 			sprites[i][j] = nil
 			animals[i][j] = nil
+			blocks[i][j] = nil
 		end
 	end
 
@@ -90,10 +93,10 @@ function _init()
         mapox = 0
         mapoy = 0
 
-		sprites[2][2] = index.block
-		sprites[3][3] = index.block
-		sprites[4][4] = index.block
-		sprites[5][5] = index.block
+		blocks[2][2] = index.block
+		blocks[3][3] = index.block
+		blocks[4][4] = index.block
+		blocks[5][5] = index.block
     elseif (state.lvl == 2) then 
         player.x = 4
         player.y = 8
@@ -104,8 +107,8 @@ function _init()
 
 		sprites[7][4] = index.key
 		
-		sprites[4][4] = index.block
-		sprites[5][5] = index.block
+		--blocks[4][4] = index.block
+		--blocks[5][5] = index.block
 
 		animals[3][1] = index.dpenguin
 		animals[4][1] = index.dpenguin
@@ -113,21 +116,19 @@ function _init()
 	end
 end
 
-function _update()
+function _update60()
 	local dx = 0
-	local dy = 0
-
-	--player.sdx = 0
-	--player.sdy = 0
-	--player.sframe = 0
-
+	local dy = 0	
+		
 	-- Try to move the player in the specified direction until they cannot
 	if (player.sdx != 0 or player.sdy != 0) then
 
-		-- update pos every 8 frames
-		if (tick % 7 == 0) player.sframe += 1
+		-- update pos every n frames
+		if (tick % 1 == 0) then
+			player.sframe += 1
+		end
 
-		-- if at 8 pixels of animation, advance the player's location a step
+		-- Advance the player's location a full step
 		if (player.sframe == 8) then 
 			player.sframe = 0
 
@@ -136,11 +137,16 @@ function _update()
 						
 			dx = player.sdx
 			dy = player.sdy
-			player.sdx = 0 -- ! side effects of can move TODO fix this
+			player.sdx = 0
 			player.sdy = 0
 
-			-- test if we can to continue moving by instigating a new movement
-			canmove(dx,dy)
+			-- pickup if sliding over item
+			pickup(player.x, player.y)
+
+			-- test if we can to continue moving by instigating a new movement (may trigger more sliding)
+			if (canmove(dx,dy) == false and player.sdx == 0 and player.sdy == 0) then
+				moveanimals()
+			end
 		end
 	else
 		-- normal movement
@@ -157,6 +163,9 @@ function _update()
 		if (canmove(dx, dy)) then
 			player.x += dx
 			player.y += dy
+
+			pickup(player.x, player.y)
+			moveanimals()
 		end
 
 	end
@@ -200,10 +209,8 @@ function draw_level()
 		for x=1, dimensions do
 			for y=1, dimensions do 
 				if (mget(x, y) == anim.water1) then
-					--blkmsg = "flip"
 					mset(x, y, anim.water2)
 				elseif(mget(x, y) == anim.water2) then
-					--blkmsg = "flop"
 					mset(x, y, anim.water1)
 				end
 			end
@@ -218,23 +225,14 @@ function draw_level()
 		for j=1, dimensions do
 			sprgrid(sprites[i][j], i, j)
 			sprgrid(animals[i][j], i, j)
+			sprgrid(blocks[i][j], i, j)
 		end
 	end
 
 	-- draw player
-	-- TODO: same?
 	spr(index.player, (player.x + mapox - 1)*gridsize + player.sdx*player.sframe, (player.y + mapoy - 1)*gridsize + player.sdy*player.sframe)
 
-
---	if (sliding >= 0) then
---		spr(index.player, (player.x + mapox - 1)*gridsize + player.sdx*player.sframe, 
-	--		              (player.y + mapoy - 1)*gridsize + player.sdy*player.sframe)
-	--else 
-	--	sprgrid(index.player, player.x, player.y)
-	--end
-
 	-- debug message
-
 	print(blkmsg)
 end
 
@@ -244,6 +242,91 @@ end
 
 function mgetspr(x, y)
 	return mget(x + mapx - 1, y + mapy - 1)
+end
+
+function moveanimals()
+	-- track which animals have already moved
+	local moved = {}
+	for i=1, dimensions do
+		moved[i] = {}
+		for j=1, dimensions do
+			moved[i][j] = false
+		end
+	end
+
+	-- move animals in place from top of grid to bottom of grid
+	for i=1, dimensions do
+		for j=1, dimensions do
+			if (moved[i][j] == false) then 
+				local a = animals[i][j]
+
+				if (a) then
+					if (a == index.dpenguin) then
+						local dx = 0
+						local dy = 1
+
+						if (acanmove(i, j, dx, dy)) then
+							animals[i][j] = nil
+							animals[i+dx][j+dy] = a
+							moved[i+dx][j+dy] = true
+						else
+							animals[i][j] = index.upenguin
+						end
+
+					elseif (a == index.upenguin) then
+						local dx = 0
+						local dy = -1
+
+						if (acanmove(i, j, dx, dy)) then
+							animals[i][j] = nil
+							animals[i+dx][j+dy] = a
+							moved[i+dx][j+dy] = true
+						else
+							animals[i][j] = index.dpenguin
+						end
+
+					end
+				end
+			end
+		end
+	end
+end
+
+
+function blockingsprite(x, y)
+	if (x <= 0 or y <= 0) return nil
+	
+	if (animals[x][y]) return true
+	if (blocks[x][y]) return true
+	return false
+end
+
+function pickup(x, y)
+	if (x <= 0 or y <= 0) return nil
+
+	local s = sprites[x][y]
+	sprites[x][y] = nil
+
+	return s
+end
+
+function acanmove(ax, ay, dx, dy)
+	if (dx == 0 and dy == 0) return false
+
+	local x = ax + dx
+	local y = ay + dy
+	local nx = x + dx
+	local ny = y + dy
+
+	local s = mgetspr(x, y)
+	local sn = mgetspr(nx, ny)
+	local flags = fget(s)
+	local nflags = fget(sn)
+
+	if (blockingsprite(x, y)) return false
+	if (band(flags, fwalkable) > 0) return true
+
+	return false
 end
 
 -- TODO: Rename
@@ -260,6 +343,8 @@ function canmove(dx, dy)
 	local sn = mgetspr(nx, ny)
 	local flags = fget(s)
 	local nflags = fget(sn)
+
+	if (blockingsprite(x, y)) return false
 
 	if (band(flags, fice) > 0) then
 		player.sdx = dx
@@ -288,7 +373,6 @@ function canmove(dx, dy)
 	--end
 
 	if (hblock) then 
-		blkmsg = "hit blk"
 
 		if (nspr == 0) then
 			--mset(localx, localy, nil)
@@ -317,7 +401,6 @@ function canmove(dx, dy)
 			-- TODO: Also don't forget multiple returns def work in lua
 
 			-- slide block until it hits an obstacle
-			blkmsg = "slide"
 			
 			for i in all(blocks) do 
 				if (i[1] == localx-mapx and i[2] == localy-mapy) then
