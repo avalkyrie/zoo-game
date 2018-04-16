@@ -122,16 +122,30 @@ function _update60()
 	local dx = 0
 	local dy = 0
 
+	pickup(player.x, player.y)
+
+	-- buffer last key pressed during animal movement
+	local b = btnp()
+	if (b > 0) player.buff = b
+
+	-- skip player movement while animals are moving
+	if (player.animaldelay > 0) then
+		player.animaldelay -= 1
+		
+		if (player.animaldelay == 0) moveanimals()
+		return
+	end
+
 	-- Try to move the player in the specified direction until they cannot
 	if (player.sdx != 0 or player.sdy != 0) then
 
 		-- update pos every n frames
-		if (tick % 1 == 0) then
+		if ((tick % 1) == 0) then
 			player.sframe += 1
 		end
 
 		-- Advance the player's location a full step
-		if (player.sframe == 8) then 
+		if (player.sframe > gridsize) then 
 			player.sframe = 0
 
 			player.x += player.sdx
@@ -139,32 +153,20 @@ function _update60()
 						
 			dx = player.sdx
 			dy = player.sdy
-			player.sdx = 0
-			player.sdy = 0
 
-			-- pickup if sliding over item
-			pickup(player.x, player.y)
-
-			-- test if we can to continue moving by instigating a new movement (may trigger more sliding)
-			if (canmove(dx,dy) == false and player.sdx == 0 and player.sdy == 0) then
-				player.animaldelay = 10
+			-- start a new slide or end sliding and let animals move
+			if (canmove(dx,dy)) then
+				if (startslide(dx,dy) == false) then 
+					endslide()
+				end
+			else 
+				endslide()
 			end
 		end
 	else
 		-- normal movement
-		
-		if (player.animaldelay > 0) player.animaldelay -= 1
-		if (player.animaldelay == 1) then
-			moveanimals()
-			player.animaldelay = 0
-		end
-	
-		local b = btnp()
-		if (b == 0) then
-			b = player.buff -- input key pressed during other animations
-		else
-			player.buff = b
-		end
+
+		if (b == 0) b = player.buff
 
 		if (band(b, 0x1) > 0) then
 			dx=-1
@@ -178,14 +180,12 @@ function _update60()
 
 		player.buff = 0
 
-		if (canmove(dx, dy)) then
+		-- do a regular movement if we can
+		if (canmove(dx, dy) and startslide(dx, dy) == false) then
 			player.x += dx
 			player.y += dy
-
-			pickup(player.x, player.y)
-			moveanimals()
+			player.animaldelay = 10
 		end
-
 	end
 
 	-- did the player win?
@@ -349,9 +349,7 @@ function acanmove(ax, ay, dx, dy)
 	local ny = y + dy
 
 	local s = mgetspr(x, y)
-	local sn = mgetspr(nx, ny)
 	local flags = fget(s)
-	local nflags = fget(sn)
 
 	if (blockingsprite(x, y)) return false
 	if (player.x == x and player.y == y) return false
@@ -360,8 +358,29 @@ function acanmove(ax, ay, dx, dy)
 	return false
 end
 
--- TODO: Rename
--- Has side effect: sets sliding to a direction of slide
+-- start player slide and return true if slide was started
+function startslide(dx, dy)
+	if (dx == 0 and dy == 0) return false
+
+	if (band(fget(mgetspr(player.x + dx, player.y + dy)), fice) > 0) then
+		player.sdx = dx
+		player.sdy = dy
+
+		return true 
+	end
+
+	return false
+end
+
+-- end sliding animations and let animals move
+function endslide()
+	player.sdx = 0
+	player.sdy = 0
+	player.animaldelay = 10
+end
+
+
+-- return true if the player can move to the adjacent block
 function canmove(dx, dy)
 	if (dx == 0 and dy == 0) return false
 
@@ -376,81 +395,11 @@ function canmove(dx, dy)
 	local nflags = fget(sn)
 
 	if (blockingsprite(x, y)) return false
-
-	if (band(flags, fice) > 0) then
-		player.sdx = dx
-		player.sdy = dy
-		player.frame = 0 -- TODO: not needed
-
-		-- because we wil animate the movement
-		return false 
-	end
-
-	--if (dx == 0 and band(flags, fclimbale) > 0) then
-		-- TODO climbing, falling
-	--end
-
 	if (band(flags, fwalkable) > 0) return true
-
+	if (band(flags, fice) > 0) return true
 	if (x == exit.x and y == exit.y and exit.sprite == index.oexit) return true
 
-	---------------------------
-	-- collided with block
-	local hblock = false
-
-	--for i in all(blocks) do 
-	--	if (i[1] == localx - maprect[1] and i[2] == localy - maprect[2]) hblock = true
-	--end
-
-	if (hblock) then 
-
-		if (nspr == 0) then
-			--mset(localx, localy, nil)
-			--mset(nextx, nexty, index.block)
-
-			-- move the block to empty space
-
-			for i in all(blocks) do 
-				if (i[1] == localx and i[2] == localy) then
-					del(blocks, i)
-					add(blocks, {nextx, nexty})
-				end
-			end
-			return true
-		elseif (band(nflag, fwater) > 0) then
-
-			-- move block into the water
-
-			--mset(localx, localy, nil)
-			--mset(nextx, nexty, index.waterblock)
-			return true
-		elseif (band(nflag, fice) > 0) then
-
-			-- TODO: If the block would push another block, don't also push that other block
-			-- TODO: Just make a dumb mget/mset but for items iget iset that does all this math since this totally worked before you added all the other things on top of it...
-			-- TODO: Also don't forget multiple returns def work in lua
-
-			-- slide block until it hits an obstacle
-			
-			for i in all(blocks) do 
-			--	if (i[1] == localx-mapx and i[2] == localy-mapy) then
-			--		del(blocks, i)
-			--		add(blocks, {nextx-mapx, nexty-mapy})
-			--	end
-			end
-			return true
-
-
-		end
-
-		return false
-
-		// how to represent a block over a block on water?
-
-	end
-
 	return false
-
 end
 
 
