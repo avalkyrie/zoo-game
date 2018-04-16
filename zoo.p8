@@ -68,9 +68,11 @@ blocks = {}
 function _init()
 	state.lvl = 2 -- debugging
 
-	player.sdx = 0
+	player.sdx = 0 -- slide direction
 	player.sdy = 0
-	player.sframe = 0
+	player.sframe = 0 -- frame of a slide animation
+	player.buff = 0 -- buffered key input
+	player.animaldelay = 0 -- slight delay after movement before animals move
 
 	-- clear sprites between levels
 	for i = 1, dimensions do
@@ -118,8 +120,8 @@ end
 
 function _update60()
 	local dx = 0
-	local dy = 0	
-		
+	local dy = 0
+
 	-- Try to move the player in the specified direction until they cannot
 	if (player.sdx != 0 or player.sdy != 0) then
 
@@ -145,20 +147,36 @@ function _update60()
 
 			-- test if we can to continue moving by instigating a new movement (may trigger more sliding)
 			if (canmove(dx,dy) == false and player.sdx == 0 and player.sdy == 0) then
-				moveanimals()
+				player.animaldelay = 10
 			end
 		end
 	else
 		-- normal movement
-		if (btnp(0)) then 
+		
+		if (player.animaldelay > 0) player.animaldelay -= 1
+		if (player.animaldelay == 1) then
+			moveanimals()
+			player.animaldelay = 0
+		end
+	
+		local b = btnp()
+		if (b == 0) then
+			b = player.buff -- input key pressed during other animations
+		else
+			player.buff = b
+		end
+
+		if (band(b, 0x1) > 0) then
 			dx=-1
-		elseif (btnp(1)) then
+		elseif (band(b, 0x2) > 0) then
 			dx=1
-		elseif (btnp(2)) then
+		elseif (band(b, 0x4) > 0) then
 			dy=-1
-		elseif (btnp(3)) then
+		elseif (band(b, 0x8) > 0) then
 			dy=1
 		end
+
+		player.buff = 0
 
 		if (canmove(dx, dy)) then
 			player.x += dx
