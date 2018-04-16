@@ -342,6 +342,7 @@ function acanmove(ax, ay, dx, dy)
 	local nflags = fget(sn)
 
 	if (blockingsprite(x, y)) return false
+	if (player.x == x and player.y == y) return false
 	if (band(flags, fwalkable) > 0) return true
 
 	return false
