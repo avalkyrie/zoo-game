@@ -3,7 +3,7 @@ version 16
 __lua__
 
 -- game state
-state = { menu = 1, lvl = 2 }
+state = { menu = 1, lvl = 1 }
 paused = 0
 
 maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
@@ -85,6 +85,10 @@ exit = {}
 -- temp structures
 moved = {}
 
+-- ui
+steps = 0
+asteps = 0
+
 function _init()
 	
 	player.sdx = 0 -- slide direction
@@ -96,6 +100,9 @@ function _init()
 	
 	player.delay = 0
 	player.delayfunc = nil
+
+	steps=0
+	asteps=0
 
 	-- clear sprites between levels
 	for i = 1, dimensions do
@@ -256,10 +263,14 @@ function _update60()
 		player.buff = 0
 
 		-- do a regular movement if we can
-		if (canmove(dx, dy) and startslide(dx, dy) == false) then
-			player.x += dx
-			player.y += dy
-			player.animaldelay = 10
+		if (canmove(dx, dy)) then
+			steps+=1
+
+			if (startslide(dx, dy) == false) then
+				player.x += dx
+				player.y += dy
+				player.animaldelay = 10
+			end
 		end
 	end
 
@@ -331,8 +342,13 @@ function draw_level()
 	drawoutline(player.sprite, (player.x + maprect[5] - 1)*gridsize + player.sdx*player.sframe, (player.y + maprect[6] - 1)*gridsize + player.sdy*player.sframe)
 	spr(player.sprite, (player.x + maprect[5] - 1)*gridsize + player.sdx*player.sframe, (player.y + maprect[6] - 1)*gridsize + player.sdy*player.sframe)
 
-	-- debug message
-	print(blkmsg)
+	-- ui
+	if (blkmsg != nil and blkmsg != 0) then
+		print(blkmsg)
+		blkmsg = nil
+	else
+		print("steps: " .. steps .. "  [animal: " .. asteps .. "]")
+	end
 end
 
 function animatewater()
@@ -425,6 +441,8 @@ function moveanimals()
 			end
 		end
 	end
+
+	asteps += 1
 end
 
 function moveanimal(a, up, down, i, j)
@@ -520,9 +538,6 @@ function checkanimalattack()
 		for j=1, dimensions do
 			local a = animals[i][j]
 			if (band(fget(a), fdeath) > 0) then
-
-				blkmsg = a
-
 				if (player.x >= i-1 and player.x <= i+1 and player.y >= j-1 and player.y <= j+1) then
 					killplayer()
 					return
@@ -541,8 +556,6 @@ end
 
 function checkdeath()
 	local s = mgetspr(player.x, player.y)
-	blkmsg = s
-
 	if (band(fget(s), fdeath) > 0) return true
 	return false
 end
@@ -693,7 +706,7 @@ c0765000066c665000005660a9999888888888888998889ac55611c0000000000000000000091900
 0000000000000000042aa24004000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000422224004000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __gff__
-00434300000000000000000000000000008181010000000000000000000000000505050505000000000101010000000000000000010000000000000000000000002a8b18000000000000000000000000efefefef0000000000000000000000000000000000000040400000000000000000000000000000000000000000000000
+00434300000000000000000000000000008181010000000000000000000000000505050505000000000101010000000000000000010000000000000000000000002a8b18000000000000000000000000000000ef0000000000000000000000000000000000000040400000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000
 __map__
 20202020202020200000000a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
