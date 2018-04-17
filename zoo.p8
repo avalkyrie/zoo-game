@@ -18,7 +18,7 @@ dimensions = 16
 -- sprite indexes
 index = {
 	player = 64,
-
+	 
 	block = 58,
 
 	cexit = 51,
@@ -55,7 +55,7 @@ index = {
 	ice = 32,
 }
 
--- animations: TODO: key is 1st sprite, value is max sprite #
+-- animations: todo: key is 1st sprite, value is max sprite #
 anim = {
 	water1 = 1,
 	water2 = 2,
@@ -188,7 +188,7 @@ function _update60()
 		return
 	end
 
-	-- Try to move the player in the specified direction until they cannot
+	-- try to move the player in the specified direction until they cannot
 	if (player.sdx != 0 or player.sdy != 0) then
 
 		-- update pos every n frames
@@ -196,7 +196,7 @@ function _update60()
 			player.sframe += 1
 		end
 
-		-- Advance the player's location a full step
+		-- advance the player's location a full step
 		if (player.sframe > gridsize) then 
 			player.sframe = 0
 
@@ -242,7 +242,7 @@ function _update60()
 
 	-- did the player win?
 	if (player.x == exit.x and player.y == exit.y) then
-		blkmsg = "Reached exit!"
+		blkmsg = "reached exit!"
 
 		state.lvl += 1
 		if (state.lvl == 5) state.lvl = 1
@@ -305,6 +305,7 @@ function draw_level()
 	end
 
 	-- draw player
+	drawoutline(index.player, (player.x + maprect[5] - 1)*gridsize + player.sdx*player.sframe, (player.y + maprect[6] - 1)*gridsize + player.sdy*player.sframe)
 	spr(index.player, (player.x + maprect[5] - 1)*gridsize + player.sdx*player.sframe, (player.y + maprect[6] - 1)*gridsize + player.sdy*player.sframe)
 
 	-- debug message
@@ -345,6 +346,24 @@ function drawice()
 				if (j == (py-2-i)%w+1) sprgrid(index.ice+1, i, j)
 			end
 
+		end
+	end
+end
+
+function drawoutline(s, x, y)
+	--s = 21
+
+	for i=0,7 do
+		for j=0,7 do
+
+			local px = (s%16)*8+i
+			local py = flr(s/16)*8 + j
+
+			if (sget(px,py) > 0) then
+				--rect(x+i-1, y+j-1, x+i+1, y+j+1, 5)
+				rect(x+i-1, y+j, x+i+1, y+j, 5)
+				rect(x+i, y+j-1, x+i, y+j+1, 5)
+			end
 		end
 	end
 end
