@@ -3,7 +3,7 @@ version 16
 __lua__
 
 -- game state
-state = { menu = 1, lvl = 1 }
+state = { menu = 1, lvl = 2 }
 paused = 0
 
 maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
@@ -18,6 +18,7 @@ dimensions = 16
 -- sprite indexes
 index = {
 	player = 64,
+	death = 72,
 	 
 	block = 58,
 
@@ -66,6 +67,7 @@ fwalkable = 0x1
 --fwater = 0x2
 fice = 0x4
 --ffire = 0x8
+fdeath = 0x40
 fclimbable = 0x80
 
 -- debug
@@ -90,6 +92,10 @@ function _init()
 	player.sframe = 0 -- frame of a slide animation
 	player.buff = 0 -- buffered key input
 	player.animaldelay = 0 -- slight delay after movement before animals move
+	player.sprite = index.player
+	
+	player.delay = 0
+	player.delayfunc = nil
 
 	-- clear sprites between levels
 	for i = 1, dimensions do
@@ -127,6 +133,7 @@ function _init()
 		sprites[3][7] = index.key
 		blocks[6][5] = index.block
 		animals[2][4] = index.usnake
+		animals[5][1] = index.usnake
 	elseif(state.lvl == 4) then
 		-- aviary 2
 		maprect = {8, 8, 16, 8, 0, 4}
@@ -174,6 +181,19 @@ function _update60()
 	local dx = 0
 	local dy = 0
 
+	if (player.delay > 0) then
+		player.delay -= 1
+		return
+	end
+	if (player.delayfunc != nil) then
+		player.delayfunc()
+	end
+
+	-- check for death
+	if (checkdeath()) then
+		killplayer()
+	end
+
 	pickup(player.x, player.y)
 
 	-- buffer last key pressed during animal movement
@@ -184,8 +204,11 @@ function _update60()
 	if (player.animaldelay > 0) then
 		player.animaldelay -= 1
 		
-		if (player.animaldelay == 0) moveanimals()
-		return
+		if (player.animaldelay == 0) then 
+			moveanimals()
+			if (checkanimalattack()) killplayer()
+			return
+		end
 	end
 
 	-- try to move the player in the specified direction until they cannot
@@ -305,8 +328,8 @@ function draw_level()
 	end
 
 	-- draw player
-	drawoutline(index.player, (player.x + maprect[5] - 1)*gridsize + player.sdx*player.sframe, (player.y + maprect[6] - 1)*gridsize + player.sdy*player.sframe)
-	spr(index.player, (player.x + maprect[5] - 1)*gridsize + player.sdx*player.sframe, (player.y + maprect[6] - 1)*gridsize + player.sdy*player.sframe)
+	drawoutline(player.sprite, (player.x + maprect[5] - 1)*gridsize + player.sdx*player.sframe, (player.y + maprect[6] - 1)*gridsize + player.sdy*player.sframe)
+	spr(player.sprite, (player.x + maprect[5] - 1)*gridsize + player.sdx*player.sframe, (player.y + maprect[6] - 1)*gridsize + player.sdy*player.sframe)
 
 	-- debug message
 	print(blkmsg)
@@ -492,6 +515,37 @@ function endslide()
 	player.animaldelay = 10
 end
 
+function checkanimalattack()
+	for i=1, dimensions do
+		for j=1, dimensions do
+			local a = animals[i][j]
+			if (band(fget(a), fdeath) > 0) then
+
+				blkmsg = a
+
+				if (player.x >= i-1 and player.x <= i+1 and player.y >= j-1 and player.y <= j+1) then
+					killplayer()
+					return
+				end
+			end
+		end
+	end
+end
+
+function killplayer()
+	blkmsg = "death"
+	player.delay = 60
+	player.sprite = index.death
+	player.delayfunc = _init
+end
+
+function checkdeath()
+	local s = mgetspr(player.x, player.y)
+	blkmsg = s
+
+	if (band(fget(s), fdeath) > 0) return true
+	return false
+end
 
 -- return true if the player can move to the adjacent block
 function canmove(dx, dy)
@@ -509,6 +563,7 @@ function canmove(dx, dy)
 
 	if (blockingsprite(x, y)) return false
 	if (band(flags, fwalkable) > 0) return true
+	if (band(flags, fwater) > 0) return true
 	if (band(flags, fice) > 0) return true
 	if (x == exit.x and y == exit.y and exit.sprite == index.oexit) return true
 
@@ -638,7 +693,7 @@ c0765000066c665000005660a9999888888888888998889ac55611c0000000000000000000091900
 0000000000000000042aa24004000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000422224004000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __gff__
-00020200000000000000000000000000008181010000000000000000000000000505050505000000000101010000000000000000010000000000000000000000002a8b18000000000000000000000000efefefef0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00434300000000000000000000000000008181010000000000000000000000000505050505000000000101010000000000000000010000000000000000000000002a8b18000000000000000000000000efefefef0000000000000000000000000000000000000040400000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000
 __map__
 20202020202020200000000a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
