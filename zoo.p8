@@ -3,7 +3,7 @@ version 16
 __lua__
 
 -- game state
-state={menu=1,lvl=1}
+state={menu=1,lvl=2}
 paused=0
 
 maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
@@ -21,18 +21,19 @@ index = {
 	death = 72,
 	 
 	block = 58,
+	wblock = 60,
 
 	cexit = 51,
 	oexit = 52,
 
 	key = 48,
 	tank = 49,
-	bow=50,
+	bow = 50,
 
 	rpenguin = 80,
 	dpenguin = 81,
 	upenguin = 82,
-	whale=105,
+	whale = 105,
 
 	jelly1 = 84,
 	jelly2 = 85,
@@ -97,10 +98,13 @@ steps = 0
 asteps = 0
 
 function _init()
+
+	reload(0x2000, 0x2000, 0x1000) -- reload map tiles
 	
 	player.sdx = 0 -- slide direction
 	player.sdy = 0
 	player.sframe = 0 -- frame of a slide animation
+	player.sblock = false -- true if sliding block in front of player
 	player.buff = 0 -- buffered key input
 	player.animaldelay = 0 -- slight delay after movement before animals move
 	player.sprite = index.player
@@ -138,7 +142,7 @@ function _init()
 		animals[5][1] = index.dpenguin
 	elseif(state.lvl==2) then
 		-- ice 2
-		maprect = {8, 0, 8, 8, 4, 4}
+		maprect = {8, 0, 9, 8, 4, 4}
         player.x = 1
         player.y = 3
 		exit.x = 6
@@ -212,6 +216,7 @@ function _update60()
 	local dx = 0
 	local dy = 0
 
+	-- delay slightly after player death
 	if (player.delay > 0) then
 		player.delay -= 1
 		return
@@ -242,7 +247,7 @@ function _update60()
 		end
 	end
 
-	-- try to move the player in the specified direction until they cannot
+	-- player is sliding on ice, so update animation until we stop
 	if (player.sdx != 0 or player.sdy != 0) then
 
 		-- update pos every n frames
@@ -250,29 +255,23 @@ function _update60()
 			player.sframe += 1
 		end
 
-		-- advance the player's location a full step
+		-- advance player one full grid unit and check if we can continue sliding
 		if (player.sframe > gridsize) then 
 			player.sframe = 0
-
 			player.x += player.sdx
 			player.y += player.sdy
 						
-			dx = player.sdx
-			dy = player.sdy
-
-			-- start a new slide or end sliding and let animals move
-			if (canmove(dx,dy)) then
-				if (startslide(dx,dy) == false) then 
-					endslide()
-				end
-			else 
-				endslide()
+			-- stop sliding if we were unable to move
+			if (moveplayer(player.sdx,player.sdy) == false) then
+				player.sdx = 0
+				player.sdy = 0
+				player.animaldelay = 10
 			end
 		end
 	else
-		-- normal movement
-
+		-- normal player movement
 		if (b == 0) b = player.buff
+		player.buff = 0
 
 		if (band(b, 0x1) > 0) then
 			dx=-1
@@ -284,16 +283,22 @@ function _update60()
 			dy=1
 		end
 
-		player.buff = 0
-
-		-- do a regular movement if we can
-		if (canmove(dx, dy)) then
+		if (moveplayer(dx,dy)) then
 			steps+=1
 
-			if (startslide(dx, dy) == false) then
-				player.x += dx
-				player.y += dy
+			if (player.sdx == 0 and player.sdy == 0) then
+				-- didn't start sliding
 				player.animaldelay = 10
+			end
+		end
+	end
+
+	-- update any tiles
+	for i=1,maprect[3] do
+		for j=1,maprect[4] do
+			if (blocks[i][j] and band(fget(mgetspr(i,j)), fwater) > 0) then
+				blocks[i][j] = nil
+				msetspr(index.wblock,i,j)
 			end
 		end
 	end
@@ -370,8 +375,13 @@ function draw_level()
 	end
 
 	-- draw player
-	drawoutline(player.sprite, (player.x + maprect[5] - 1)*gridsize + player.sdx*player.sframe, (player.y + maprect[6] - 1)*gridsize + player.sdy*player.sframe)
-	spr(player.sprite, (player.x + maprect[5] - 1)*gridsize + player.sdx*player.sframe, (player.y + maprect[6] - 1)*gridsize + player.sdy*player.sframe)
+	local pox = (player.x + maprect[5] - 1)*gridsize + player.sdx*player.sframe
+	local poy = (player.y + maprect[6] - 1)*gridsize + player.sdy*player.sframe
+	drawoutline(player.sprite, pox, poy)
+	spr(player.sprite, pox, poy)
+
+	-- draw block pushed by player one square ahead of the player
+	if (player.sblock) spr(index.block, pox+gridsize*player.sdx, poy+gridsize*player.sdy)
 
 	-- ui
 	if (blkmsg != nil and blkmsg != 0) then
@@ -463,6 +473,11 @@ function mgetspr(x, y)
 	if (x < 1 or x > maprect[3] or y < 1 or y > maprect[4]) return nil
 
 	return mget(x + maprect[1] - 1, y + maprect[2] - 1)
+end
+
+function msetspr(s, x, y)
+	if (x < 1 or x > maprect[3] or y < 1 or y > maprect[4]) return
+	mset(x+maprect[1]-1,y+maprect[2]-1,s)
 end
 
 function moveanimals()
@@ -564,12 +579,9 @@ function moveanimal(a, up, down, i, j)
 	end
 end
 
-
-function blockingsprite(x, y)
-	if (x <= 0 or y <= 0) return nil
-	
-	if (animals[x][y]) return true
-	if (blocks[x][y]) return true
+function ispushablebiganimal(x, y)
+	local a = animals[x][y]
+	if (a==index.fturtle or a==index.flturtle or a==index.bturtle or a==index.blturtle) return true
 	return false
 end
 
@@ -598,33 +610,13 @@ function acanmove(ax, ay, dx, dy)
 	local s = mgetspr(x, y)
 	local flags = fget(s)
 
-	if (blockingsprite(x, y)) return false
+	if (animals[x][y]) return false
+	if (blocks[x][y]) return false
 	if (player.x == x and player.y == y) return false
 	if (band(flags, fwater) > 0) return false
 	if (band(flags, fwalkable) > 0) return true
 
 	return false
-end
-
--- start player slide and return true if slide was started
-function startslide(dx, dy)
-	if (dx == 0 and dy == 0) return false
-
-	if (band(fget(mgetspr(player.x + dx, player.y + dy)), fice) > 0) then
-		player.sdx = dx
-		player.sdy = dy
-
-		return true 
-	end
-
-	return false
-end
-
--- end sliding animations and let animals move
-function endslide()
-	player.sdx = 0
-	player.sdy = 0
-	player.animaldelay = 10
 end
 
 function checkanimalattack()
@@ -653,7 +645,7 @@ function checkanimalattack()
 end
 
 function killplayer()
-	blkmsg = "death"
+	--blkmsg = "death"
 	player.delay = 60
 	player.sprite = index.death
 	player.delayfunc = _init
@@ -665,29 +657,119 @@ function checkdeath()
 	return false
 end
 
+-- check if transitioning between these two blocks is a slide movement
+function moveisslide(x, y, dx, dy)	
+	if (band(fget(mgetspr(x, y)), fice) > 0 or band(fget(mgetspr(x+dx, y+dy)), fice) > 0) return true 
+	return false
+end
+
+function isblock(x, y)
+	if (x <= 0 or y <= 0) return false
+	if (blocks[x][y]) return true
+	return false
+end
+
+function canpushblockto(x, y, flags)
+	if (x <= 0 or y <= 0) return false
+
+	if (animals[x][y]) return false
+	if (blocks[x][y]) return false
+	if (band(flags, fwalkable) > 0) return true
+	if (band(flags, fwater) > 0) return true
+	if (band(flags, fice) > 0) return true
+	return false
+end
+
+function canwalkto(x, y, flags)
+	if (x <= 0 or y <= 0) return false
+
+	if (animals[x][y]) return false
+	if (blocks[x][y]) return true
+	if (band(flags, fwalkable) > 0) return true
+	if (band(flags, fwater) > 0) return true
+	if (band(flags, fice) > 0) return true
+	return false
+end
+
 -- return true if the player can move to the adjacent block
-function canmove(dx, dy)
+function moveplayer(dx, dy)
 	if (dx == 0 and dy == 0) return false
 
 	local x = player.x + dx
 	local y = player.y + dy
 	local nx = x + dx
 	local ny = y + dy
-
 	local s = mgetspr(x, y)
-	local sn = mgetspr(nx, ny)
+	local ns = mgetspr(nx, ny)
 	local flags = fget(s)
-	local nflags = fget(sn)
+	local nflags = fget(ns)
 
-	if (blockingsprite(x, y)) return false
-	if (band(flags, fwalkable) > 0) return true
-	if (band(flags, fwater) > 0) return true
-	if (band(flags, fice) > 0) return true
-	if (x == exit.x and y == exit.y and exit.sprite == index.oexit) return true
+
+	-- handle normally out of bounds exit tiles (may have 0-index)
+	if (x == exit.x and y == exit.y and exit.sprite == index.oexit and player.sblock == false) then
+		player.x = x
+		player.y = y
+		return true
+	end
+
+	if (x <= 0 or y <= 0) return false
+
+	-- try to continue sliding a block
+	if (player.sblock) then
+		-- drop block in water
+		if (band(flags, fwater) > 0) then
+			msetspr(index.wblock,x,y)
+			player.sblock = false
+			return false
+		end
+
+		-- continue pushing unless we already pushed it onto non-ice
+		if (band(flags, fice) > 0 and canpushblockto(nx, ny, nflags)) return true
+
+		-- stop pushing here
+		blocks[x][y] = index.block
+		player.sblock = false
+		return false
+	end
+
+	-- try to move by pushing or sliding a block
+	if (isblock(x, y)) then
+		if (player.sdx != 0 or player.sdy != 0) then
+			-- if sliding, hitting a block stops the player
+			return false
+		end
+
+		if (canpushblockto(nx, ny, nflags)) then
+			if (moveisslide(x, y, dx, dy)) then
+				blocks[x][y] = nil
+				player.sblock = true
+			else
+				blocks[nx][ny] = blocks[x][y]
+				blocks[x][y] = nil
+			end
+		else
+			return false
+		end
+	end
+
+	-- if we are sliding and not currently on ice, stop moving
+	if ((player.sdx > 0 or player.sdy > 0) and band(fget(mgetspr(player.x,player.y)), fice) == 0) return false
+
+	-- normal slide or walk
+	if (canwalkto(x, y, flags)) then
+		if (moveisslide(player.x, player.y, dx, dy)) then
+			player.sdx = dx
+			player.sdy = dy
+		else 
+			player.x += dx
+			player.y += dy
+		end
+
+		return true
+	end
 
 	return false
 end
-
 
 __gfx__
 00000000ccccccccc7ccccc744444449000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -714,14 +796,14 @@ ccccccccccc77777777ccccccccccc77cccccccc0000000000000000000000000000000011111111
 cccccccccc77777777ccccccccccc77ccccccccc0000000000000000000000000000000011111111131113111411111155555555555555550000000000000000
 ccccccccc77777777ccccccccccc77cccccccccc0000000000000000000000000000000011111111113131111141141157756675555555550000000000000000
 cccccccc77777777ccccccccccc77ccccccccccc0000000000000000000000000000000011111111111111111111111166777776555555550000000000000000
-00999900000550000000000000444400004444000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0090090000555500ee0000ee044224400446644000000000000000000ee00ee00ee0ee0000000000054444500000000000000000000000000000000000000000
-0099990000aaaaa0ee9009ee042aa240046666400000000000000000e88ee88ee88e88e000000000045445400544445000000000000000000000000000000000
-000900000055550a0ee99ee0042a2240046666400000000000000000e888888ee88888e000000000044554400454454000000000000000000000000000000000
-000900000055550a0ee99ee0042aa240046666400000000000000000e888888e0e888e0000000000044554400445544000000000000000000000000000000000
-0009900000aaaa0aee9009ee042a22400466664000000000000000000e8888e000e8e00000000000045445400445544000000000000000000000000000000000
-00090000005555a0ee0000ee042aa24004666640000000000000000000e88e00000e000000000000054444500454454000000000000000000000000000000000
-00099900005555000000000004222240046666400000000000000000000ee0000000000000000000000000000544445000000000000000000000000000000000
+009999000005500000000000004444000044440000000000000000000000000000000000000000000000000000000000cccccccc000000000000000000000000
+0090090000555500ee0000ee044224400446644000000000000000000ee00ee00ee0ee00000000000544445000000000c544445c000000000000000000000000
+0099990000aaaaa0ee9009ee042aa240046666400000000000000000e88ee88ee88e88e0000000000454454005444450c454454c000000000000000000000000
+000900000055550a0ee99ee0042a2240046666400000000000000000e888888ee88888e0000000000445544004544540c445544c000000000000000000000000
+000900000055550a0ee99ee0042aa240046666400000000000000000e888888e0e888e00000000000445544004455440c445544c000000000000000000000000
+0009900000aaaa0aee9009ee042a22400466664000000000000000000e8888e000e8e000000000000454454004455440c454454c000000000000000000000000
+00090000005555a0ee0000ee042aa24004666640000000000000000000e88e00000e0000000000000544445004544540c544445c000000000000000000000000
+00099900005555000000000004222240046666400000000000000000000ee00000000000000000000000000005444450cccccccc000000000000000000000000
 000000000000000000000000000000000000000000000000000000000000000000ccc00c00eeee00000000000000000000000000000000000000000000000000
 00ccc00000cccc000000000000000000000000000000000000000000000000000c666cc00eeefee0000000000000000000000000000000000000000000000000
 0c44cc000cc444c0000000000000000000000000000000000000000000000000c66666c00edffde0000000000000000000000000000000000000000000000000
@@ -811,15 +893,15 @@ c0765000066c665000005660a9999888888888888998889ac55611c0000000000000000000091900
 0000000000000000042aa24004000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000422224004000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __gff__
-00434300000000000000000000000000008181010000000000000000000000000505050505000000000101010000000000000000010000000000000000000000002a8b18000000000000000000000000000000ef00000000000000000000000000ef000000000040400000000000000000000000000000000000000000000000
+00434300000000000000000000000000008181010000000000000000000000000505050505000000000101010000000000000000010000000000000001000000002a8b18000000000000000000000000000000ef00000000000000000000000000ef000000000040400000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000
 __map__
-20202020202020202d202020202020290a0a0a0a0a0a0a0a0a0a0a0a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+20202020202020202d20202020202029000a0a0a0a0a0a0a0a0a0a0a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 2020202020202020202020202020202900000000000a0a0a0a0a0a0a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 2d2d2020202d2c2c202020202020202900000000000a0a000a0a0a0a0a0a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 2d2d2020202d2020202020202020202900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 2d2d2020202d20202d2d02020102020200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-2c2c2020202d202002010201020201020a0a0a0a0a0a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2c2c2020202d20200201020102020102000a0a0a0a0a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 20202020202c2020010201010101010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 202020202020202002010101020102010000000000000a0a0a0a0a0a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 1014101412101014101014141410101012101012101010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
