@@ -481,8 +481,11 @@ function _update60()
 		
 		-- z/x to start game
 		if (btn(4) or btn(5)) then
-			state.menu = game			
+			state.menu = game
+
+			if (state.lvl == 0) state.lvl = 1
 			_init()
+			return
 		end
 	end
 
@@ -631,8 +634,6 @@ function draw_startmenu()
 			sprgrid(blocks[i][j], i, j)
 		end
 	end
-
-	print(blkmsg, 0, 0)
 end
 
 function draw_ending()
@@ -702,9 +703,7 @@ function draw_level()
 
 	-- dialog box
 	--drawbox({text[4], text[5]})
-	drawbox({text[6], text[7], text[8]})
-
-
+	--drawbox({text[6], text[7], text[8]})
 end
 
 function drawbossbox(sa)
