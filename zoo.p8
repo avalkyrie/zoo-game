@@ -211,7 +211,7 @@ function _init()
 		-- aquarium 1
 		maprect = {0, 16, 8, 8, 4, 4}
         player.x = 1
-        player.y = 6
+        player.y = 8
 		exit.x = 1
 		exit.y = 0
 		exit.sprite = index.cexit
@@ -310,7 +310,7 @@ function _update60()
 		-- z/x to reset?
 	--end
 
-	-- Update game
+	-- update game
 	if (state.menu != game) return
 
 	local dx = 0
@@ -327,7 +327,7 @@ function _update60()
 
 	-- check for death
 	if (checkdeath()) then
-		killplayer(21)
+		return
 	end
 
 	pickup(player.x, player.y)
@@ -340,9 +340,8 @@ function _update60()
 	if (player.animaldelay > 0) then
 		player.animaldelay -= 1
 		
-		if (player.animaldelay == 0) then 
+		if (player.animaldelay == 0) then
 			moveanimals()
-			checkanimalattack()
 			return
 		end
 	end
@@ -512,10 +511,10 @@ function draw_level()
 	if (blkmsg != nil and blkmsg != 0) then
 		print(blkmsg)
 		blkmsg = nil
-	else
+	end
 		--print("steps: " .. steps .. "  [animal: " .. asteps .. "]")
 		print("steps: " .. steps)
-	end
+
 end
 
 function animatewater()
@@ -775,28 +774,33 @@ function acanmove(ax, ay, dx, dy)
 end
 
 function checkanimalattack()
+	local killsfx = 0
+
 	for i=1, maprect[3] do
 		for j=1, maprect[4] do
 			local a = animals[i][j]
 			if (band(fget(a), fdeath) > 0) then
-				if (player.x >= i-1 and player.x <= i+1 and player.y >= j-1 and player.y <= j+1) then
-					killplayer(3)
-					return
-				end
+				if (player.x >= i-1 and player.x <= i+1 and player.y >= j-1 and player.y <= j+1) killsfx = 3
 			end
 
 			-- jelly death
 			if (a==index.ujelly1 or a==index.ujelly2 or a==index.jelly1 or a==index.jelly2) then
-				if ((player.x==i-1 or player.x==i+1) and player.y==j) killplayer(4)
-
+				if ((player.x==i-1 or player.x==i+1) and player.y==j) killsfx = 4
 				if (a==index.ujelly1 or a==index.ujelly2) then
-					if (player.y==j-1 and player.x==i) killplayer(4)
+					if (player.y==j-1 and player.x==i) killplayer(4) killsfx = 4
 				else
-					if (player.y==j+1 and player.x==i) killplayer(4)
+					if (player.y==j+1 and player.x==i) killsfx = 4
 				end
 			end
 		end
 	end
+
+	if (killsfx > 0) then
+		sfx(killsfx)
+		return true
+	end
+
+	return false
 end
 
 function killplayer(s)
@@ -809,8 +813,19 @@ function killplayer(s)
 end
 
 function checkdeath()
+	-- death by map sprite (e.g. water tile, fire)
 	local s = mgetspr(player.x, player.y)
-	if (band(fget(s), fdeath) > 0) return true
+	if (band(fget(s), fdeath) > 0) then
+		killplayer(21)
+		return true
+	end
+
+	-- death by animal
+	if (checkanimalattack()) then
+		killplayer()
+		return true
+	end
+
 	return false
 end
 
