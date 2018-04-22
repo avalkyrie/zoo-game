@@ -80,6 +80,171 @@ index = {
 	ice = 32,
 }
 
+-- dialog boxes
+dialog = {
+	bcorner = 245,
+	bcornerarrow = 244,
+	bside = 246,
+	btop = 247,
+	corner = 248,
+	side = 249,
+	top = 250,
+}
+
+-- this text is synced with a script to a google doc
+text = {
+"birnam zoo will be closing in\n",
+"in 5 min",
+"finally",
+"closing time. i hope you had a\n",
+"great time at the zoo!",
+"mom: now kids, what do you say\n",
+"to noah the zookeeper for\n",
+"showing us around today?",
+"kids: thank you noah!",
+"no problem, see you next time!",
+"----------------",
+"i thought this day would never\n",
+"end! i can finally go home.",
+"----------------",
+"note on door: noah, can you\n",
+"please lock the office when\n",
+"you're done? had to leave early.\n",
+"sorry! exhibits should be locked\n",
+"already! ~karen",
+"of course. perfect.\n",
+"wait, where are my keys? they\n",
+"were on my belt a second ago...",
+"----------------",
+"mackers has them! you stupid\n",
+"monkey, come back here!",
+"----------------",
+"----------------",
+"the key to the west garden! now\n",
+"if i can find mackers...",
+"----------------",
+"----------------",
+"wait! at least he dropped the\n",
+"rainforest key before he left.",
+"----------------",
+"----------------",
+"the key! guess i can go\n",
+"back or mess around here for\n",
+"a bit...",
+"----------------",
+"oh good! mackers come here!",
+"----------------",
+"oh you little *&%$#!",
+"----------------",
+"----------------",
+"----------------",
+"mackers! not the aquarium!\n",
+"can you even swim?",
+"----------------",
+"mackers, when did you learn to\n",
+"scuba dive?",
+"----------------",
+"noah? do you copy? noah?",
+"karen? i'm a bit underwater\n ",
+"at the moment...",
+"you in the aquarium? perfect!\n",
+"the schools of fish passed all",
+"their tests today!",
+"can you make sure they graduate\n",
+"before you leave? thx!",
+"can't it wait till tmrw? karen?",
+"karen?",
+"oh, well, i'm here anyway...",
+"----------------",
+"fish, congratulations on your\n",
+"graduation! i am truly proud...\n",
+"that i get to go home now.",
+"----------------",
+"mackers,there you are!\n",
+"no - don't go into the tundra!\n",
+"you'll freeze...with my keys!",
+"----------------",
+"----------------",
+"stop monkeying around,\n",
+"the ice is slippery!",
+"----------------",
+"i need this day to be over.",
+"where is that %&$# monkey?",
+"noah? are you still at the zoo?",
+"yes, karen. i haven't left yet.\n",
+"i'm just about to leave now-",
+"oh, not yet! please make sure\n",
+"the penguins are ready for the\n",
+"evening before you go. they are\n",
+"in the tundra.",
+"i know where the penguins are,\n",
+"karen. i work here.",
+"great! their bowties are in the\n",
+"tundra too!",
+"bowties? where are these\n",
+"penguins going, the opera?\n",
+"karen?",
+"----------------",
+"penguins looking dapper, great.\n",
+"time to get out of here...wait,\n",
+"where is the door back?",
+"----------------",
+"oh no! how did the fire kitsune\n",
+"get out of the mythical creature\n",
+"enclosure! how am i supposed to\n",
+"reach the door?",
+"karen? karen! are you there?",
+"i'm here! you almost done with\n",
+"those penguins?",
+"i don't have time for this, the\n",
+"fire kitsune is in the tundra\n",
+"and i can't get to the door!",
+"that's all? well, you just need\n",
+"the pearl, the soul of the\n",
+"kitsune, and to find a way to\n",
+"freeze it in order to-",
+"oh, that's it? find the soul of",
+"a kitsune and freeze it?",
+"thanks karen!",
+"----------------",
+"phew! someone else has got to\n",
+"thaw that thing out tomorrow.\n",
+"for now, i'm going home!\n",
+"----------------",
+"----------------",
+"oh now you're tired.\n",
+"are you coming or not mackers?",
+"----------------",
+"finally,home! i get to enjoy\n",
+"the rest of my birthday in\n",
+"peace and quiet!",
+"surprise!\n",
+"happy birthday!",
+"karen? what are you and all the\n",
+"other zookeepers doing here?\n",
+"i thought you left early-",
+"we were getting ready for your\n",
+"party silly. we had to stall!",
+"mackers stealing my keys?",
+"that was us.",
+"the fish and the penguins?",
+"yup. us too!",
+"the fire kitsune?",
+"you sound mad...",
+"get out.",
+"the end",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+}
+
+
+
 -- animations: todo: key is 1st sprite, value is max sprite #
 anim = {
 	water1 = 1,
@@ -153,7 +318,7 @@ function _init()
 	-- config levels
 	if (state.lvl == 1) then
 		-- plaza
-		maprect = {0, 24, 10, 8, 4, 4}
+		maprect = {0, 24, 10, 8, 3, 2}
         player.x = 6
         player.y = 8
 		exit.x = 0
@@ -417,7 +582,6 @@ function _update60()
 	-- animate map tiles
 	animatewater()
 	animatestaticanimals()
-
 end
 
 function _draw()
@@ -515,6 +679,66 @@ function draw_level()
 		--print("steps: " .. steps .. "  [animal: " .. asteps .. "]")
 		print("steps: " .. steps)
 
+	-- dialog box
+	--drawbox({text[4], text[5]})
+	drawbox({text[6], text[7], text[8]})
+
+
+end
+
+function drawbossbox(sa)
+	drawdialogbox(sa, dialog.bcornerarrow, dialog.bcorner, dialog.bside, dialog.btop)
+end
+
+function drawbox(sa)
+	drawdialogbox(sa, dialog.corner, dialog.corner, dialog.side, dialog.top)
+end
+
+-- Number of lines to fit, special top left corner, regular corner, side, top
+function drawdialogbox(sa, sc, c, s, t)	
+	local xmin = 0
+	local xmax = 15
+	local ymax = 14
+	local ymin = ymax - #sa
+
+	for i = xmin, xmax do
+		for j = 0, 15 do
+			local x = i*gridsize
+			local y = j*gridsize
+
+			-- corners
+			if (i==xmin and j==ymin) sprflip(c, x, y, 0)
+			if (i==xmin and j==ymax) sprflip(c, x, y, 2)
+			if (i==xmax and j==ymin) sprflip(c, x, y, 1)
+			if (i==xmax and j==ymax) sprflip(c, x, y, 3)
+
+			-- top and bottom
+			if (i>xmin and i<xmax) then
+				if (j==ymin) sprflip(t, x, y)
+				if (j==ymax) sprflip(t, x, y, 2)
+			end
+
+			-- sides
+			if (j>ymin and j<ymax) then
+				if (i==xmin) sprflip(s, x, y)
+				if (i==xmax) sprflip(s, x, y, 1)
+			end
+		end
+	end
+
+	-- background
+	rectfill(xmin*8+8, ymin*8+8, xmax*8-1, ymax*8-1, 7)
+
+
+	-- text
+	for i=1, #sa do
+		print (sa[i], xmin*8 + 5, ymin*8+8*(i-1) + 5, 0)
+	end
+end
+
+-- draw sprite with flipping, 0 = none, 1 = x, 2 = y, 3 = x+y
+function sprflip(s, x, y, r)
+	spr(s, x, y, 1, 1, r == 1 or r == 3, r == 2 or r == 3)
 end
 
 function animatewater()
@@ -1150,22 +1374,22 @@ ffff000ff99fff800000000000000000000000000000000088888888000000000000000000000005
 04babb40043a33400433334004cccc40000111000bbb000005555550aa5555aa00555500000000000000000000000000dd0005addd00000d0dddd0d00dddd0dd
 04baab40043aa3400433334004cccc40111151000b5bbbbb05655650056556500056550000000000000000000000000000d00dd000d00dd000d0000d00d0000d
 04bbbb40043333400433334004cccc4011015cc0335b0b0b0555555005555550005555000000000000000000000000000000000d0000000d000d0000000d0000
-0044440000444400004444000044440010011c5553bb000b0aaa00000aaaaaa00000aaa000077700007770000077700000777777777777777777770000000000
-044cc44004411440044224400440044000000cc033000000aa00000000000000000000aa00777770077777000777770007722222222222222222277000000000
-04caac40041aa140042aa2400400004000000c0003000000a00a7777777777777777a00a00777777777777777777770077277777777777777777727700000000
-04cacc40041a1140042a22400400004000000cc033000000a0a777777777777777777a0a07777777777777777777777072777777777777777777772700000000
-04caac40041aa140042aa2400400004000000c000300000000777777777777777777770077777777777777777777777772777777777777777777772700000000
-04cacc40041a1140042a22400400004000000cc03300000000777777777777777777770077777777777777777777777772777777777777777777772700000000
-04caac40041aa140042aa24004000040000000000000000000777777777777777777770067777777777777777777777672777777777777777777772700000000
-04cccc40041111400422224004000040000000000000000000777777777777777777770006777777777777777777776072777777777777777777772700000000
-0011110000cccc000033330000bbbb0000000000770a0aaa00777777777777777777770000777777777777777777770072777777777777777777772700000000
-0010010000c00c000030030000b00b00000000000770000000777777777777777777770007777777777777777777777072777777777777777777772700000000
-0011110000cccc000033330000bbbb00000000000777777700777777777777777777770077777777777777777777777772777777777777777777772700000000
-00010000000c000000030000000b000000000000a077777700777777777777777777770077777777777777777777777772777777777777777777772700000000
-00010000000c000000030000000b00000000000000777777a0a777777777777777777a0a67777777777777777777777672777777777777777777772700000000
-00011000000cc00000033000000bb00000000000a0777777a00a7777777777777777a00a06677777677777767777766077277777777777777777727700000000
-00010000000c000000030000000b000000000000a0777777aa00000000000000000000aa00067776067777606777600007722222222222222222277000000000
-00011100000ccc0000033300000bbb0000000000a07777770aaa00000aaaaaa00000aaa000006660006666000666000000777777777777777777770000000000
+0044440000444400004444000044440010011c5553bb000b00000000000000000000000000000000000000000000000000000000000000000000000000000000
+044cc44004411440044224400440044000000cc03300000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+04caac40041aa140042aa2400400004000000c000300000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+04cacc40041a1140042a22400400004000000cc03300000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+04caac40041aa140042aa2400400004000000c000300000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+04cacc40041a1140042a22400400004000000cc03300000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+04caac40041aa140042aa24004000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+04cccc40041111400422224004000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0011110000cccc000033330000bbbb00770a0aaa0aaa0000007777770aaaaaa00077777772777777777777770000000000000000000000000000000000000000
+0010010000c00c000030030000b00b0007700000aa000000a0777777000000000772222272777777222222220000000000000000000000000000000000000000
+0011110000cccc000033330000bbbb0007777777a00a7777a0777777777777777727777772777777777777770000000000000000000000000000000000000000
+00010000000c000000030000000b0000a0777777a0a77777a0777777777777777277777772777777777777770000000000000000000000000000000000000000
+00010000000c000000030000000b00000077777700777777a0777777777777777277777772777777777777770000000000000000000000000000000000000000
+00011000000cc00000033000000bb000a077777700777777a0777777777777777277777772777777777777770000000000000000000000000000000000000000
+00010000000c000000030000000b0000a077777700777777a0777777777777777277777772777777777777770000000000000000000000000000000000000000
+00011100000ccc0000033300000bbb00a07777770077777700777777777777777277777772777777777777770000000000000000000000000000000000000000
 __gff__
 0043438000810000000500010100000000818180000001000005010101000000050505050500000000010101808001010000434305050000008080808181010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000404000
 0000000000000000000000000000000000000040404000000000000000000000000000404040000000000000000000000000004040400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000
