@@ -493,11 +493,7 @@ function _update60()
 		-- z/x to reset?
 	--end
 
-	-- update game
 	if (state.menu != game) return
-
-	local dx = 0
-	local dy = 0
 
 	-- delay slightly after player death
 	if (player.delay > 0) then
@@ -530,6 +526,8 @@ function _update60()
 			checkanimaleaten()
 			return
 		end
+
+		return
 	end
 
 	-- player is sliding on ice, so update animation until we stop
@@ -559,6 +557,8 @@ function _update60()
 		if (b == 0) b = player.buff
 		player.buff = 0
 
+		local dx = 0
+		local dy = 0
 		if (band(b, 0x1) > 0) then
 			dx=-1
 		elseif (band(b, 0x2) > 0) then
