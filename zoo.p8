@@ -298,7 +298,7 @@ function _init()
 	player.sdy = 0
 	player.sframe = 0 -- frame of a slide animation
 	player.sblock = false -- true if sliding block in front of player
-	--player.buff = 0 -- buffered key input
+	player.buff = 0 -- buffered key input
 	player.animaldelay = 0 -- slight delay after movement before animals move
 	player.sprite = index.player
 	player.isvertical = false
@@ -515,9 +515,9 @@ function _update60()
 
 	pickup(player.x, player.y)
 
-	-- buffer last key pressed during animal movement
-	--local b = btnp()
-	--if (b > 0) player.buff = b
+	-- buffer last key press unless we were forced to slide on ice
+	local b = btnp()
+	if (b > 0 and player.sdx == 0 and player.sdx == 0) player.buff = b
 
 	-- skip player movement while animals are moving
 	if (player.animaldelay > 0) then
@@ -554,9 +554,9 @@ function _update60()
 		end
 	else
 		-- normal player movement
-		---if (b == 0) b = player.buff
-		--player.buff = 0
 		local b = btnp()
+		if (b == 0) b = player.buff
+		player.buff = 0
 
 		if (band(b, 0x1) > 0) then
 			dx=-1
