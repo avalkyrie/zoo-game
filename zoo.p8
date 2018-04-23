@@ -290,8 +290,8 @@ function _init()
 
 	-- setup menu items
 	if (state.menu == game) then
-		menuitem(1, "restart level", function() _init() sfx(1) end)
-		menuitem(2, "next level", function() state.lvl += 1 _init() sfx(1) end)
+		menuitem(1, "restart level", function() _init() playsound(1) end)
+		menuitem(2, "next level", function() state.lvl += 1 _init() playsound(1) end)
 	end
 	
 	player.sdx = 0 -- slide direction
@@ -578,10 +578,10 @@ function _update60()
 
 			if (player.sdx == 0 and player.sdy == 0) then
 				-- didn't start sliding
-				sfx(40)
+				playsound(40)
 				player.animaldelay = 10
 			else
-				sfx(39)
+				playsound(39)
 			end
 		end
 	end
@@ -723,6 +723,11 @@ end
 
 function drawbox(sa)
 	drawdialogbox(sa, dialog.corner, dialog.corner, dialog.side, dialog.top)
+end
+
+-- sound turned off until someone who actually knows sounds can redo them
+function playsound(s)
+	if (0) sfx(s)
 end
 
 -- Number of lines to fit, special top left corner, regular corner, side, top
@@ -1032,7 +1037,7 @@ function moveanimal(a, up, down, i, j, leftright, fx)
 		animals[i][j] = flipped
 	end
 
-	if (fx) sfx(fx)
+	if (fx) playsound(fx)
 
 end
 
@@ -1062,7 +1067,7 @@ function pickup(x, y)
 
 	if (s) then
 		sprites[x][y] = nil
-		sfx(fx)
+		playsound(fx)
 	end
 
 	if (s == index.tank) player.oxygen = 6
@@ -1122,7 +1127,7 @@ function checkanimalattack()
 	end
 
 	if (killsfx > 0) then
-		sfx(killsfx)
+		playsound(killsfx)
 		return true
 	end
 
@@ -1175,7 +1180,7 @@ function checkanimaleaten()
 	end
 
 	if (eatsfx > 0) then
-		sfx(eatsfx)
+		playsound(eatsfx)
 		return true
 	end
 
@@ -1252,7 +1257,7 @@ function placechild(bred, x, y)
 end
 
 function killplayer(s)
-    if (s) sfx(s)
+    if (s) playsound(s)
     
 	--blkmsg = "death"
 	player.delay = 60
@@ -1385,9 +1390,9 @@ function moveplayer(dx, dy)
 				player.sblock = true
 			else
 				--if (band(nflags, fwalkable) > 0 and band(nflags, fwater) == 0) then
-				--	sfx(27, 1)
+				--	playsound(27, 1)
 				--else
-				--	sfx(29, 1) -- into water
+				--	playsound(29, 1) -- into water
 				--end
 				
 				blocks[nx][ny] = blocks[x][y]
