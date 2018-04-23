@@ -3,7 +3,7 @@ version 16
 __lua__
 
 -- game state
-state={menu=4,lvl=4}
+state={menu=1,lvl=0}
 
 startmenu = 1
 endmenu = 3
@@ -302,6 +302,7 @@ function _init()
 	player.animaldelay = 0 -- slight delay after movement before animals move
 	player.sprite = index.player
 	player.isvertical = false
+	player.oxygen = -1
 	
 	player.delay = 0
 	player.delayfunc = nil
@@ -390,6 +391,7 @@ function _init()
 		maprect = {0, 16, 8, 8, 4, 4}
         player.x = 1
         player.y = 8
+		player.oxygen = 6
 		exit.x = 1
 		exit.y = 0
 		exit.sprite = index.cexit
@@ -403,6 +405,7 @@ function _init()
 		maprect = {24, 16, 9, 11, 3.5, 2.5}
         player.x = 5
         player.y = 1
+		player.oxygen = 6
 		exit.x = 5    
 		exit.y = 0
 		exit.sprite = index.oexit
@@ -504,12 +507,12 @@ function _update60()
 		player.delayfunc()
 	end
 
+	pickup(player.x, player.y)
+
 	-- check for death
 	if (checkdeath()) then
 		return
 	end
-
-	pickup(player.x, player.y)
 
 	-- buffer last key press unless we were forced to slide on ice
 	local b = btnp()
@@ -571,6 +574,7 @@ function _update60()
 
 		if (moveplayer(dx,dy)) then
 			steps+=1
+			player.oxygen-=1
 
 			if (player.sdx == 0 and player.sdy == 0) then
 				-- didn't start sliding
@@ -701,7 +705,12 @@ function draw_level()
 		blkmsg = nil
 	end
 		--print("steps: " .. steps .. "  [animal: " .. asteps .. "]")
-		print("steps: " .. steps)
+		
+		if (player.oxygen > 0) then
+			print("steps: " .. steps .. "  [oxygen: " .. player.oxygen .. "]")
+		else
+			print("steps: " .. steps)
+		end
 
 	-- dialog box
 	--drawbox({text[4], text[5]})
@@ -1056,6 +1065,8 @@ function pickup(x, y)
 		sfx(fx)
 	end
 
+	if (s == index.tank) player.oxygen = 6
+
 	if (s == index.key or s == index.key2) then
 		exit.sprite = index.oexit
 	end
@@ -1259,6 +1270,12 @@ function checkdeath()
 
 	-- death by animal
 	if (checkanimalattack()) then
+		killplayer()
+		return true
+	end
+
+	-- death from nitrogen
+	if (player.oxygen == 0) then
 		killplayer()
 		return true
 	end
