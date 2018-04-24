@@ -578,7 +578,10 @@ function _update60()
 		if (state.phase == outrophase and dialog[outrophase] == nil) state.phase = gamephase
 		if (state.phase == keyitemphase and dialog[keyitemphase] == nil) state.phase = gamephase
 
-		if (state.phase != gamephase and btnp() > 0) then
+		if (state.phase == introphase and hasplayedintro == true) then
+			state.phase = gamephase
+			dialogindex = 1
+		elseif (state.phase != gamephase and btnp() > 0) then
 			dialogindex += 1
 
 			if (dialogindex > #dialog[state.phase]) then
