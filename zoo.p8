@@ -726,7 +726,7 @@ end
 
 -- sound turned off until someone who actually knows sounds can redo them
 function playsound(s)
-	if (0) sfx(s)
+	--sfx(s)
 end
 
 -- number of lines to fit, special top left corner, regular corner, side, top
