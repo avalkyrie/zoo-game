@@ -9,7 +9,6 @@ startmenu = 1
 endmenu = 3
 game = 4
 
-
 maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
 
 -- player
@@ -333,8 +332,8 @@ function _init()
 	elseif (state.lvl == 1) then
 		-- plaza
 		maprect = {0, 24, 10, 8, 3, 3}
-        player.x = 6
-        player.y = 8
+		player.x = 6
+		player.y = 8
 		exit.x = 0
 		exit.y = 3
 		exit.sprite = index.cexit
@@ -347,8 +346,8 @@ function _init()
 	elseif (state.lvl == 2) then
 		-- w. garden 1
 		maprect = {14, 24, 10, 8, 3, 3}
-        player.x = 10
-        player.y = 5
+		player.x = 10
+		player.y = 5
 		exit.x = 11
 		exit.y = 4
 		exit.sprite = index.cexit
@@ -366,8 +365,8 @@ function _init()
 		-- rainforest 1
 		maprect = {0, 8, 8, 8, 4, 4}
 		player.isvertical = true
-        player.x = 8
-        player.y = 1
+		player.x = 8
+		player.y = 1
 		exit.x = 0
 		exit.y = 7
 		exit.sprite = index.cexit
@@ -378,8 +377,8 @@ function _init()
 		-- rainforest 2 - unused
 		maprect = {8, 8, 16, 8, 0, 4}
 		player.isvertical = true
-        player.x = 12
-        player.y = 2
+		player.x = 12
+		player.y = 2
 		exit.x = 1
 		exit.y = 8
 		exit.sprite = index.oexit
@@ -389,24 +388,24 @@ function _init()
 	elseif (state.lvl == 4) then
 		-- aquarium 1
 		maprect = {0, 16, 8, 8, 4, 4}
-        player.x = 1
-        player.y = 8
+		player.x = 1
+		player.y = 8
 		player.oxygen = 6
 		exit.x = 1
 		exit.y = 0
 		exit.sprite = index.cexit
-	    sprites[8][8] = index.key
+		sprites[8][8] = index.key
 		aa(animals, index.jelly1, {1,1,6,6})
 		aas(animals, {index.flturtle,7,2,index.blturtle,8,2})
-        aas(animals, {index.ujelly1,2,1})
+		aas(animals, {index.ujelly1,2,1})
 		aa(sprites, index.tank, {2,3, 7,3, 5,7, 8,6})
 	elseif (state.lvl == 5) then
 		-- aquarium 2 
 		maprect = {24, 16, 9, 11, 3.5, 2.5}
-        player.x = 5
-        player.y = 1
+		player.x = 5
+		player.y = 1
 		player.oxygen = 6
-		exit.x = 5    
+		exit.x = 5	  
 		exit.y = 0
 		exit.sprite = index.oexit
 		aa(sprites, index.tank, {4,1,6,1,8,2,1,4,4,5,7,7,3,8,1,10,5,10})
@@ -418,11 +417,11 @@ function _init()
 		animals[5][7] = index.blturtle
 		aa(animals, index.fish, {8,1,9,1,6,8,7,8})
 		aa(animals, index.jelly1, {4,3,5,3,6,6,7,6})
-   	elseif (state.lvl == 6) then
+	elseif (state.lvl == 6) then
 		-- tundra 1
 		maprect = {0, 0, 8, 8, 4, 4}
-        player.x = 4
-        player.y = 8
+		player.x = 4
+		player.y = 8
 		exit.x = 6
 		exit.y = 0
 		exit.sprite = index.cexit
@@ -431,8 +430,8 @@ function _init()
 	elseif (state.lvl == 7) then
 		-- tundra 2
 		maprect = {8, 0, 9, 8, 4, 4}
-        player.x = 1
-        player.y = 3
+		player.x = 1
+		player.y = 3
 		exit.x = 6
 		exit.y = 9
 		exit.sprite = index.oexit
@@ -445,8 +444,8 @@ function _init()
 	elseif (state.lvl == 8) then
 		-- tundra 2
 		maprect = {34, 14, 9, 13, 3.5, 1}
-        player.x = 4
-        player.y = 13
+		player.x = 4
+		player.y = 13
 		exit.x = 10
 		exit.y = 1
 		exit.sprite = index.oexit
@@ -628,7 +627,7 @@ function draw_startmenu()
 
 	-- draw text
 	rectfill(16-2,13-1,62,20, 11)
-	print ("i t ' s   a",  16, 14, 1)
+	print ("i t ' s	  a",  16, 14, 1)
 
 	rectfill(30-2,76-2,94,82, 1)
 	if (tick % 120 >= 60) then
@@ -704,7 +703,7 @@ function draw_level()
 		print(blkmsg)
 		blkmsg = nil
 	end
-		--print("steps: " .. steps .. "  [animal: " .. asteps .. "]")
+		--print("steps: " .. steps .. "	 [animal: " .. asteps .. "]")
 		
 		if (player.oxygen > 0) then
 			print("steps: " .. steps .. "  [oxygen: " .. player.oxygen .. "]")
@@ -730,8 +729,8 @@ function playsound(s)
 	if (0) sfx(s)
 end
 
--- Number of lines to fit, special top left corner, regular corner, side, top
-function drawdialogbox(sa, sc, c, s, t)	
+-- number of lines to fit, special top left corner, regular corner, side, top
+function drawdialogbox(sa, sc, c, s, t) 
 	local xmin = 0
 	local xmax = 15
 	local ymax = 14
@@ -1201,7 +1200,7 @@ function breedrabbits()
 		end
 	end
 
-	-- TODO: Make this behave more like the game of life (too many nearby rabbits will prohibit more rabbits, [maybe not kill any though])
+	-- todo: make this behave more like the game of life (too many nearby rabbits will prohibit more rabbits, [maybe not kill any though])
 
 	if (count > 50) return
 
@@ -1210,7 +1209,7 @@ function breedrabbits()
 			local a = animals[i][j]
 			if (a==index.rabbit and bred[i][j] == false) then
 
-				-- TODO: make an adjacent coordinates iterator
+				-- todo: make an adjacent coordinates iterator
 				if (trytobreed(a, bred, i, j, -1, 0) or trytobreed(a, bred, i, j, 1, 0) or trytobreed(a, bred, i, j, 0, -1) or trytobreed(a, bred, i, j, 0, 1)) then
 					
 				end
@@ -1257,8 +1256,8 @@ function placechild(bred, x, y)
 end
 
 function killplayer(s)
-    if (s) playsound(s)
-    
+	if (s) playsound(s)
+	
 	--blkmsg = "death"
 	player.delay = 60
 	player.sprite = index.death
