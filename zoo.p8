@@ -3,12 +3,18 @@ version 16
 __lua__
 
 -- game state
-state={menu=4,lvl=5}
-
 startmenu = 1
 endmenu = 3
 game = 4
 
+introphase = "intro"
+outrophase = "outro"
+keyitemphase = "keyitem"
+gamephase = "game"
+
+state={menu=game,lvl=1,phase=introphase}
+
+text = {}
 maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
 
 -- player
@@ -91,8 +97,11 @@ index = {
 	ice = 32,
 }
 
--- dialog boxes
-dialog = {
+-- text boxes
+dialog = {}
+dialogindex = 1
+
+dialogbox = {
 	bcorner = 245,
 	bcornerarrow = 244,
 	bside = 246,
@@ -101,160 +110,6 @@ dialog = {
 	side = 249,
 	top = 250,
 }
-
--- this text is synced with a script to a google doc
-text = {
-"birnam zoo will be closing in\n",
-"in 5 min",
-"finally",
-"closing time. i hope you had a\n",
-"great time at the zoo!",
-"mom: now kids, what do you say\n",
-"to noah the zookeeper for\n",
-"showing us around today?",
-"kids: thank you noah!",
-"no problem, see you next time!",
-"----------------",
-"i thought this day would never\n",
-"end! i can finally go home.",
-"----------------",
-"note on door: noah, can you\n",
-"please lock the office when\n",
-"you're done? had to leave early.\n",
-"sorry! exhibits should be locked\n",
-"already! ~karen",
-"of course. perfect.\n",
-"wait, where are my keys? they\n",
-"were on my belt a second ago...",
-"----------------",
-"mackers has them! you stupid\n",
-"monkey, come back here!",
-"----------------",
-"----------------",
-"the key to the west garden! now\n",
-"if i can find mackers...",
-"----------------",
-"----------------",
-"wait! at least he dropped the\n",
-"rainforest key before he left.",
-"----------------",
-"----------------",
-"the key! guess i can go\n",
-"back or mess around here for\n",
-"a bit...",
-"----------------",
-"oh good! mackers come here!",
-"----------------",
-"oh you little *&%$#!",
-"----------------",
-"----------------",
-"----------------",
-"mackers! not the aquarium!\n",
-"can you even swim?",
-"----------------",
-"mackers, when did you learn to\n",
-"scuba dive?",
-"----------------",
-"noah? do you copy? noah?",
-"karen? i'm a bit underwater\n ",
-"at the moment...",
-"you in the aquarium? perfect!\n",
-"the schools of fish passed all",
-"their tests today!",
-"can you make sure they graduate\n",
-"before you leave? thx!",
-"can't it wait till tmrw? karen?",
-"karen?",
-"oh, well, i'm here anyway...",
-"----------------",
-"fish, congratulations on your\n",
-"graduation! i am truly proud...\n",
-"that i get to go home now.",
-"----------------",
-"mackers,there you are!\n",
-"no - don't go into the tundra!\n",
-"you'll freeze...with my keys!",
-"----------------",
-"----------------",
-"stop monkeying around,\n",
-"the ice is slippery!",
-"----------------",
-"i need this day to be over.",
-"where is that %&$# monkey?",
-"noah? are you still at the zoo?",
-"yes, karen. i haven't left yet.\n",
-"i'm just about to leave now-",
-"oh, not yet! please make sure\n",
-"the penguins are ready for the\n",
-"evening before you go. they are\n",
-"in the tundra.",
-"i know where the penguins are,\n",
-"karen. i work here.",
-"great! their bowties are in the\n",
-"tundra too!",
-"bowties? where are these\n",
-"penguins going, the opera?\n",
-"karen?",
-"----------------",
-"penguins looking dapper, great.\n",
-"time to get out of here...wait,\n",
-"where is the door back?",
-"----------------",
-"oh no! how did the fire kitsune\n",
-"get out of the mythical creature\n",
-"enclosure! how am i supposed to\n",
-"reach the door?",
-"karen? karen! are you there?",
-"i'm here! you almost done with\n",
-"those penguins?",
-"i don't have time for this, the\n",
-"fire kitsune is in the tundra\n",
-"and i can't get to the door!",
-"that's all? well, you just need\n",
-"the pearl, the soul of the\n",
-"kitsune, and to find a way to\n",
-"freeze it in order to-",
-"oh, that's it? find the soul of",
-"a kitsune and freeze it?",
-"thanks karen!",
-"----------------",
-"phew! someone else has got to\n",
-"thaw that thing out tomorrow.\n",
-"for now, i'm going home!\n",
-"----------------",
-"----------------",
-"oh now you're tired.\n",
-"are you coming or not mackers?",
-"----------------",
-"finally,home! i get to enjoy\n",
-"the rest of my birthday in\n",
-"peace and quiet!",
-"surprise!\n",
-"happy birthday!",
-"karen? what are you and all the\n",
-"other zookeepers doing here?\n",
-"i thought you left early-",
-"we were getting ready for your\n",
-"party silly. we had to stall!",
-"mackers stealing my keys?",
-"that was us.",
-"the fish and the penguins?",
-"yup. us too!",
-"the fire kitsune?",
-"you sound mad...",
-"get out.",
-"the end",
-"",
-"",
-"",
-"",
-"",
-"",
-"",
-"",
-}
-
-
 
 -- animations: todo: key is 1st sprite, value is max sprite #
 anim = {
@@ -293,6 +148,8 @@ function _init()
 
 	reload(0x2000, 0x2000, 0x1000) -- reload map tiles
 
+	state.phase = introphase
+
 	-- setup menu items
 	if (state.menu == game) then
 		menuitem(1, "restart level", function() _init() playsound(1) end)
@@ -324,6 +181,9 @@ function _init()
 
 	steps=0
 	asteps=0
+
+	dialog = {}
+	dialogindex = 1
 
 	-- clear sprites between levels
 	for i = 1, dimensions do
@@ -359,6 +219,55 @@ function _init()
 		aas(sprites, {201,2,1,202,6,1})
 		sprites[4][1] = index.key
 		aa(animals, index.rabbit, {4,5,6,6})
+
+		dialog[introphase] = {
+{"birnam zoo will be closing in\n",
+"in 5 min"},
+
+{"finally"},
+
+{"closing time. i hope you had a\n",
+"great time at the zoo!"},
+
+{"mom: now kids, what do you say\n",
+"to noah the zookeeper for\n",
+"showing us around today?"},
+
+{"kids: thank you noah!"},
+
+{"no problem, see you next time!"},
+
+--"----------------",
+
+{"i thought this day would never\n",
+"end! i can finally go home."},
+
+--"----------------",
+
+{"note on door: noah, can you\n",
+"please lock the office when\n",
+"you're done? had to leave early.\n",
+"sorry! exhibits should be locked\n",
+"already! ~karen"},
+
+{"of course. perfect.\n",
+"wait, where are my keys? they\n",
+"were on my belt a second ago..."},
+
+--"----------------",
+
+{"mackers has them! you stupid\n",
+"monkey, come back here!"},
+
+--"----------------",
+--"----------------",
+
+}
+		dialog[keyitemphase] = {
+"the key to the west garden! now\nif i can find mackers...",
+}
+		--dialog[outrophase] = {}
+
 	elseif (state.lvl == 2) then
 		-- w. garden 1
 		maprect = {14, 24, 10, 8, 3, 3}
@@ -483,6 +392,7 @@ function _init()
 		aas(sprites, {217,8,7,218,9,7,233,8,8,234,9,8}) --cake
 		aas(sprites, {243,5,10,242,5,12,241,5,14}) --keys
 	end
+
 end
 
 -- copy from list of points into the specified array
@@ -523,6 +433,20 @@ function _update60()
 	end
 
 	if (state.menu != game) return
+
+	if (state.phase == introphase) then
+		if (dialog[introphase] == nil) then
+			state.phase = gamephase
+		elseif (btnp() > 0) then
+			dialogindex += 1
+
+			if (dialogindex > #dialog[introphase]) then
+				state.phase = gamephase
+			end
+		end
+	end
+
+	if (state.phase != gamephase) return
 
 	-- delay slightly after player death
 	if (player.delay > 0) then
@@ -765,9 +689,9 @@ function draw_level()
 		if (player.goalneededcount > 0) s = s .. "  " .. player.goaltext .. ": " .. player.goalcount .. "/" .. player.goalneededcount
 		print(s)
 
-	-- dialog box
-	--drawbox({text[4], text[5]})
-	--drawbox({text[6], text[7], text[8]})
+	if (state.phase == introphase and dialog[introphase]) then
+		drawbox(dialog[introphase][dialogindex])
+	end
 end
 
 function nextlevel()
@@ -777,11 +701,11 @@ function nextlevel()
 end
 
 function drawbossbox(sa)
-	drawdialogbox(sa, dialog.bcornerarrow, dialog.bcorner, dialog.bside, dialog.btop)
+	drawdialogbox(sa, dialogbox.bcornerarrow, dialogbox.bcorner, dialogbox.bside, dialogbox.btop)
 end
 
 function drawbox(sa)
-	drawdialogbox(sa, dialog.corner, dialog.corner, dialog.side, dialog.top)
+	drawdialogbox(sa, dialogbox.corner, dialogbox.corner, dialogbox.side, dialogbox.top)
 end
 
 -- sound turned off until someone who actually knows sounds can redo them
@@ -790,7 +714,8 @@ function playsound(s)
 end
 
 -- number of lines to fit, special top left corner, regular corner, side, top
-function drawdialogbox(sa, sc, c, s, t) 
+function drawdialogbox(sa, sc, c, s, t)
+	if (sa == nil) return
 	local xmin = 0
 	local xmax = 15
 	local ymax = 14
