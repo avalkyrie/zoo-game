@@ -12,7 +12,7 @@ outrophase = "outro"
 keyitemphase = "keyitem"
 gamephase = "game"
 
-state={menu=game,lvl=1,phase=introphase}
+state={menu=startmenu,lvl=0,phase=introphase}
 
 text = {}
 maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
@@ -74,8 +74,8 @@ index = {
 
 	rabbit = 115,
 
-	usnake = 125,
-	dsnake = 126,
+	usnake = 124,
+	dsnake = 125,
 
 	pbird1 = 136,
 	pbird2 = 137,
@@ -100,6 +100,7 @@ index = {
 -- text boxes
 dialog = {}
 dialogindex = 1
+hasplayedintro = false
 
 dialogbox = {
 	bcorner = 245,
@@ -246,9 +247,10 @@ function _init()
 
 {"note on door: noah, can you\n",
 "please lock the office when\n",
-"you're done? had to leave early.\n",
-"sorry! exhibits should be locked\n",
-"already! ~karen"},
+"you're done? had to leave\n",
+"early. sorry! exhibits should\n",
+"be locked already!\n",
+"                    ~karen"},
 
 {"of course. perfect.\n",
 "wait, where are my keys? they\n",
@@ -264,7 +266,8 @@ function _init()
 
 }
 		dialog[keyitemphase] = {
-"the key to the west garden! now\nif i can find mackers...",
+{"the key to the west garden!\n",
+"now if i can find mackers...",}
 }
 		--dialog[outrophase] = {}
 
@@ -286,6 +289,18 @@ function _init()
 		--sprites[5][2] = index.bubble
 		sprites[2][5] = index.key
 
+		dialog[introphase] = {
+{"wait! at least he dropped the\n",
+"rainforest key before he left."}
+}
+		dialog[keyitemphase] = {
+{"the key! guess i can go\n",
+"back or mess around here for\n",
+"a bit..."}
+}
+		dialog[outrophase] = {
+}
+
 	elseif (state.lvl == 3) then
 		-- rainforest 1
 		maprect = {0, 8, 8, 8, 4, 4}
@@ -298,6 +313,18 @@ function _init()
 		sprites[3][6] = index.key2
 		blocks[6][4] = index.block
 		animals[2][5] = index.usnake
+
+		
+		dialog[introphase] = {
+{"that snake doesn't look\n",
+"very friendly..."}
+}
+		dialog[keyitemphase] = {
+
+}
+		dialog[outrophase] = {
+}
+
 	elseif (state.lvl == 10) then
 		-- rainforest 2 - unused
 		maprect = {8, 8, 16, 8, 0, 4}
@@ -324,6 +351,18 @@ function _init()
 		aas(animals, {index.flturtle,7,2,index.blturtle,8,2})
 		aas(animals, {index.ujelly1,2,1})
 		aa(sprites, index.tank, {2,3, 7,3, 5,7, 8,6})
+
+		
+		dialog[introphase] = {
+{"mackers, when did you learn to\n",
+"scuba dive?"}
+}
+		dialog[keyitemphase] = {
+
+}
+		dialog[outrophase] = {
+
+}
 	elseif (state.lvl == 5) then
 		-- aquarium 2 
 		maprect = {24, 16, 9, 11, 3.5, 2.5}
@@ -344,6 +383,26 @@ function _init()
 		animals[5][7] = index.blturtle
 		aa(animals, index.fish, {8,1,9,1,6,8,7,8})
 		aa(animals, index.jelly1, {4,3,5,3,6,6,7,6})
+
+		
+		dialog[introphase] = {
+{"noah? do you copy? noah?"},
+{"karen? i'm a bit underwater\n",
+"at the moment..."},
+{"you in the aquarium? perfect!"},
+{"the schools of fish passed all\n",
+"their tests today!"},
+{"can you make sure they graduate\n",
+"before you leave? thx!"},
+{"can't it wait till tmrw? karen?"},
+{"karen?"},
+{"oh, well, i'm here anyway..."},
+}
+		dialog[keyitemphase] = {
+
+}
+		dialog[outrophase] = {
+}
 	elseif (state.lvl == 6) then
 		-- tundra 1
 		maprect = {0, 0, 8, 8, 4, 4}
@@ -354,6 +413,16 @@ function _init()
 		exit.sprite = index.cexit
 		sprites[7][4] = index.key
 		aa(animals, index.dpenguin, {3,1,4,1,5,1})
+		
+		dialog[introphase] = {
+{"stop monkeying around,\n",
+"the ice is slippery!",}
+}
+		dialog[keyitemphase] = {
+
+}
+		dialog[outrophase] = {
+}
 	elseif (state.lvl == 7) then
 		-- tundra 2
 		maprect = {8, 0, 9, 8, 4, 4}
@@ -369,12 +438,39 @@ function _init()
 		aa(animals, index.dpenguin, {3,1,4,1,5,1})
 		animals[4][5] = index.bwhale
 		animals[3][5] = index.fwhale
+		
+		dialog[introphase] = {
+{"i need this day to be over."},
+{"where is that %&$# monkey?"},
+{"noah? are you still at the zoo?"},
+{"yes, karen. i haven't left yet.\n",
+"i'm just about to leave now-"},
+{"oh, not yet! please make sure\n",
+"the penguins are ready for the\n",
+"evening before you go. they are\n",
+"in the tundra."},
+{"i know where the penguins are,\n",
+"karen. i work here."},
+{"great! their bowties are in the\n",
+"tundra too!"},
+{"bowties? where are these\n",
+"penguins going, the opera?\n",
+"karen?"},
+}
+		dialog[keyitemphase] = {
+
+}
+		dialog[outrophase] = {
+{"penguins looking dapper, great.\n",
+"time to get out of here...wait,\n",
+"where is the door back?"},
+}
 	elseif (state.lvl == 8) then
 		-- tundra 2
 		maprect = {34, 14, 9, 13, 3.5, 1}
 		player.x = 4
 		player.y = 13
-		exit.x = 10
+		exit.x = 4
 		exit.y = 1
 		exit.sprite = index.oexit
 		animals[3][5] = index.bwhale
@@ -384,6 +480,34 @@ function _init()
 		aa(animals, index.rpenguin, {2,10,2,11,2,12})
 		sprites[3][6] = index.pearl
 		aa(blocks, index.block, {1,6,6,7,1,8,7,8,8,8,5,9,9,9,9,10,1,11})
+		
+		dialog[introphase] = {
+{"oh no! how did the fire kitsune\n",
+"get out of the mythical creature\n",
+"enclosure! how am i supposed to\n",
+"reach the door?"},
+{"karen? karen! are you there?"},
+{"i'm here! you almost done with\n",
+"those penguins?"},
+{"i don't have time for this, the\n",
+"fire kitsune is in the tundra\n",
+"and i can't get to the door!"},
+{"that's all? well, you just need\n",
+"the pearl, the soul of the\n",
+"kitsune, and to find a way to\n",
+"freeze it in order to-"},
+{"oh, that's it? find the soul of\n",
+"a kitsune and freeze it?"},
+{"thanks karen!"},
+}
+		dialog[keyitemphase] = {
+
+}
+		dialog[outrophase] = {
+{"phew! someone else has got to\n",
+"thaw that thing out tomorrow.\n",
+"for now, i'm going home!"},
+}
 	elseif (state.lvl == 9) then
 		-- end menu
 		maprect = {96, 0, 16, 16, 0, 0}
@@ -391,6 +515,28 @@ function _init()
 		aa(animals, 235, {12,8}) -- hat monkey
 		aas(sprites, {217,8,7,218,9,7,233,8,8,234,9,8}) --cake
 		aas(sprites, {243,5,10,242,5,12,241,5,14}) --keys
+
+		dialog[introphase] = {
+{"finally,home! i get to enjoy\n",
+"the rest of my birthday in\n",
+"peace and quiet!"},
+{"surprise!\n",
+"happy birthday!"},
+{"karen? what are you and all the\n",
+"other zookeepers doing here?\n",
+"i thought you left early-"},
+{"we were getting ready for your\n",
+"party silly. we had to stall!"},
+{"mackers stealing my keys?"},
+{"that was us."},
+{"the fish and the penguins?"},
+{"yup. us too!"},
+{"the fire kitsune?"},
+{"you sound mad..."},
+{"get out."},
+{"the end"},
+}
+
 	end
 
 end
@@ -427,26 +573,30 @@ function _update60()
 		end
 	end
 
-	if (state.menu == endmenu) then
-		-- z/x to reset?
+	if (state.phase != gamephase) then
+		if (state.phase == introphase and dialog[introphase] == nil) state.phase = gamephase
+		if (state.phase == outrophase and dialog[outrophase] == nil) state.phase = gamephase
+		if (state.phase == keyitemphase and dialog[keyitemphase] == nil) state.phase = gamephase
+
+		if (state.phase != gamephase and btnp() > 0) then
+			dialogindex += 1
+
+			if (dialogindex > #dialog[state.phase]) then
+				if (state.phase == introphase) hasplayedintro = true
+				state.phase = gamephase
+				dialogindex = 1
+			end
+		end
+
 		return
 	end
 
 	if (state.menu != game) return
 
-	if (state.phase == introphase) then
-		if (dialog[introphase] == nil) then
-			state.phase = gamephase
-		elseif (btnp() > 0) then
-			dialogindex += 1
-
-			if (dialogindex > #dialog[introphase]) then
-				state.phase = gamephase
-			end
-		end
+	if (state.menu == endmenu) then
+		-- z/x to reset?
+		return
 	end
-
-	if (state.phase != gamephase) return
 
 	-- delay slightly after player death
 	if (player.delay > 0) then
@@ -610,7 +760,7 @@ function draw_endmenu()
 
 	local x = 20
 
-	print("thank you for playing our game!", 3, 6)
+	print("thank you for playing our demo!", 3, 6)
 
 	-- draw logo text
 	local len = #"weird sisters"
@@ -625,6 +775,10 @@ function draw_endmenu()
 	print ("ava", x, y, 7)
 	print ("rachel", x, y+16, 7)
 	print ("jessica", x, y+32, 7)
+
+	if (state.phase != gamephase and dialog[state.phase]) then
+		drawbox(dialog[state.phase][dialogindex])
+	end
 
 end
 
@@ -689,13 +843,14 @@ function draw_level()
 		if (player.goalneededcount > 0) s = s .. "  " .. player.goaltext .. ": " .. player.goalcount .. "/" .. player.goalneededcount
 		print(s)
 
-	if (state.phase == introphase and dialog[introphase]) then
-		drawbox(dialog[introphase][dialogindex])
+	if (state.phase != gamephase and dialog[state.phase] and (state.phase == introphase and hasplayedintro == false)) then
+		drawbox(dialog[state.phase][dialogindex])
 	end
 end
 
 function nextlevel()
 	state.lvl += 1
+	hasplayedintro = false
 	if (state.lvl == 9) state.menu = endmenu
 	_init()
 end
@@ -1078,6 +1233,9 @@ function pickup(x, y)
 
 	if (s == index.key or s == index.key2) then
 		exit.sprite = index.oexit
+
+		state.phase = keyitemphase
+		dialogindex = 1
 	end
 
 	return s
