@@ -101,8 +101,12 @@ index = {
 dialog = {}
 dialogindex = 1
 hasplayedintro = false
+hasplayedkey = false
+hasplayedoutro = false
 
 dialogbox = {
+	radioon = 214,
+	radiooff = 215,
 	bcorner = 245,
 	bcornerarrow = 244,
 	bside = 246,
@@ -222,43 +226,44 @@ function _init()
 		aa(animals, index.rabbit, {4,5,6,6})
 
 		dialog[introphase] = {
-{"birnam zoo will be closing in\n",
+{"announcer","birnam zoo will be closing in\n",
 "in 5 min"},
 
-{"finally"},
+{"noah", "finally"},
 
-{"closing time. i hope you had a\n",
+{"noah", "closing time. i hope you had a\n",
 "great time at the zoo!"},
 
-{"mom: now kids, what do you say\n",
+{"mom", "now kids, what do you say\n",
 "to noah the zookeeper for\n",
 "showing us around today?"},
 
-{"kids: thank you noah!"},
+{"kids", "thank you noah!"},
 
-{"no problem, see you next time!"},
+{"noah", "no problem, see you next time!"},
 
 --"----------------",
 
-{"i thought this day would never\n",
+{"noah", "i thought this day would never\n",
 "end! i can finally go home."},
 
 --"----------------",
 
-{"note on door: noah, can you\n",
+{"note on door", "noah, can you\n",
 "please lock the office when\n",
 "you're done? had to leave\n",
 "early. sorry! exhibits should\n",
 "be locked already!\n",
 "                    ~karen"},
 
-{"of course. perfect.\n",
+{"noah", "of course. perfect.\n",
 "wait, where are my keys? they\n",
-"were on my belt a second ago..."},
+"were on my belt a second\n",
+"ago.."},
 
 --"----------------",
 
-{"mackers has them! you stupid\n",
+{"noah", "mackers has them! you stupid\n",
 "monkey, come back here!"},
 
 --"----------------",
@@ -266,7 +271,7 @@ function _init()
 
 }
 		dialog[keyitemphase] = {
-{"the key to the west garden!\n",
+{"noah", "the key to the west garden!\n",
 "now if i can find mackers...",}
 }
 		--dialog[outrophase] = {}
@@ -290,11 +295,11 @@ function _init()
 		sprites[2][5] = index.key
 
 		dialog[introphase] = {
-{"wait! at least he dropped the\n",
+{"noah", "wait! at least he dropped the\n",
 "rainforest key before he left."}
 }
 		dialog[keyitemphase] = {
-{"the key! guess i can go\n",
+{"noah", "the key! guess i can go\n",
 "back or mess around here for\n",
 "a bit..."}
 }
@@ -316,7 +321,7 @@ function _init()
 
 		
 		dialog[introphase] = {
-{"that snake doesn't look\n",
+{"noah", "that snake doesn't look\n",
 "very friendly..."}
 }
 		dialog[keyitemphase] = {
@@ -354,7 +359,7 @@ function _init()
 
 		
 		dialog[introphase] = {
-{"mackers, when did you learn to\n",
+{"noah", "mackers, when did you learn to\n",
 "scuba dive?"}
 }
 		dialog[keyitemphase] = {
@@ -386,17 +391,19 @@ function _init()
 
 		
 		dialog[introphase] = {
-{"noah? do you copy? noah?"},
-{"karen? i'm a bit underwater\n",
+{"karen", "noah? do you copy? noah?"},
+{"noah", "karen? i'm a bit underwater",
 "at the moment..."},
-{"you in the aquarium? perfect!"},
-{"the schools of fish passed all\n",
-"their tests today!"},
-{"can you make sure they graduate\n",
-"before you leave? thx!"},
-{"can't it wait till tmrw? karen?"},
-{"karen?"},
-{"oh, well, i'm here anyway..."},
+{"karen", "you in the aquarium?",
+"perfect!"},
+{"karen", "the schools of fish passed",
+"all their tests today!"},
+{"karen", "can you make sure they",
+"graduate before you leave?",
+"thx!"},
+{"noah", "can't it wait till tomorrow?", "karen?"},
+{"noah", "karen?"},
+{"noah", "oh, well, i'm here anyway..."},
 }
 		dialog[keyitemphase] = {
 
@@ -415,7 +422,7 @@ function _init()
 		aa(animals, index.dpenguin, {3,1,4,1,5,1})
 		
 		dialog[introphase] = {
-{"stop monkeying around,\n",
+{"noah", "stop monkeying around,\n",
 "the ice is slippery!",}
 }
 		dialog[keyitemphase] = {
@@ -440,28 +447,29 @@ function _init()
 		animals[3][5] = index.fwhale
 		
 		dialog[introphase] = {
-{"i need this day to be over."},
-{"where is that %&$# monkey?"},
-{"noah? are you still at the zoo?"},
-{"yes, karen. i haven't left yet.\n",
+{"noah", "i need this day to be over."},
+{"noah", "where is that %$\x8f#\x92 monkey?"},
+{"karen", "noah? are you still at the", "zoo?"},
+{"noah", "yes, karen."},
+{"noah", "i haven't left yet.",
 "i'm just about to leave now-"},
-{"oh, not yet! please make sure\n",
-"the penguins are ready for the\n",
-"evening before you go. they are\n",
-"in the tundra."},
-{"i know where the penguins are,\n",
+{"karen", "oh, not yet! please make",
+"sure the penguins are ready",
+"for the evening before you\n",
+"go. they are in the tundra."},
+{"noah", "i know where the penguins are,\n",
 "karen. i work here."},
-{"great! their bowties are in the\n",
-"tundra too!"},
-{"bowties? where are these\n",
-"penguins going, the opera?\n",
-"karen?"},
+{"karen", "great! their bowties are in\n",
+"the tundra too!"},
+{"noah", "bowties? where are these\n",
+"penguins going, the opera?"},
+{"noah", "karen?"},
 }
 		dialog[keyitemphase] = {
 
 }
 		dialog[outrophase] = {
-{"penguins looking dapper, great.\n",
+{"noah", "penguins looking dapper, great.\n",
 "time to get out of here...wait,\n",
 "where is the door back?"},
 }
@@ -482,59 +490,62 @@ function _init()
 		aa(blocks, index.block, {1,6,6,7,1,8,7,8,8,8,5,9,9,9,9,10,1,11})
 		
 		dialog[introphase] = {
-{"oh no! how did the fire kitsune\n",
-"get out of the mythical creature\n",
-"enclosure! how am i supposed to\n",
-"reach the door?"},
-{"karen? karen! are you there?"},
-{"i'm here! you almost done with\n",
-"those penguins?"},
-{"i don't have time for this, the\n",
-"fire kitsune is in the tundra\n",
-"and i can't get to the door!"},
-{"that's all? well, you just need\n",
-"the pearl, the soul of the\n",
-"kitsune, and to find a way to\n",
-"freeze it in order to-"},
-{"oh, that's it? find the soul of\n",
-"a kitsune and freeze it?"},
-{"thanks karen!"},
+{"noah", "oh no! how did the fire",
+"kitsune escape the mythical",
+"creature enclosure! how am i",
+"supposed to reach the door?"},
+{"noah", "karen? karen! are you there?"},
+{"karen", "i'm here! you almost done",
+"with those penguins?"},
+{"noah", "i don't have time for this,",
+"the fire kitsune is in the",
+"tundra and i can't get to the",
+"door!"},
+{"karen", "that's all? well, you just",
+"need the pearl, the soul of",
+"the kitsune, and to find a",
+"way to freeze it in order",
+"to-"},
+{"noah", "oh, that's it? find the soul",
+"of a kitsune and freeze it?",
+"thanks karen!"},
 }
 		dialog[keyitemphase] = {
 
 }
 		dialog[outrophase] = {
-{"phew! someone else has got to\n",
+{"noah", "phew! someone else has got to\n",
 "thaw that thing out tomorrow.\n",
 "for now, i'm going home!"},
 }
 	elseif (state.lvl == 9) then
 		-- end menu
 		maprect = {96, 0, 16, 16, 0, 0}
-		aa(animals, 236, {5,8}) -- hat bunny
-		aa(animals, 235, {12,8}) -- hat monkey
-		aas(sprites, {217,8,7,218,9,7,233,8,8,234,9,8}) --cake
-		aas(sprites, {243,5,10,242,5,12,241,5,14}) --keys
+		aa(animals, 218, {5,8}) -- hat bunny
+		aa(animals, 217, {12,8}) -- hat monkey
+		aas(sprites, {203,8,7,204,9,7,219,8,8,220,9,8}) --cake
+		aas(blocks, {243,5,10,242,5,12,241,5,14}) --keys
 
 		dialog[introphase] = {
-{"finally,home! i get to enjoy\n",
+{"noah", "finally, home! i get to enjoy\n",
 "the rest of my birthday in\n",
 "peace and quiet!"},
-{"surprise!\n",
+{"karen and coworkers", "surprise!\n",
 "happy birthday!"},
-{"karen? what are you and all the\n",
-"other zookeepers doing here?\n",
-"i thought you left early-"},
-{"we were getting ready for your\n",
+{"noah", "karen? what are you and all\n",
+"the other zookeepers doing\n",
+"here? i thought you left",
+"early-"},
+{"karen and coworkers", "we were getting ready for your\n",
 "party silly. we had to stall!"},
-{"mackers stealing my keys?"},
-{"that was us."},
-{"the fish and the penguins?"},
-{"yup. us too!"},
-{"the fire kitsune?"},
-{"you sound mad..."},
-{"get out."},
-{"the end"},
+{"noah", "mackers stealing my keys?"},
+{"coworkers", "that was us."},
+{"noah", "the fish and the penguins?"},
+{"coworkers", "yup. us too!"},
+{"noah", "the fire kitsune?"},
+{"coworkers", "you sound mad..."},
+{"noah", "get out."},
+{"", "           the end"},
 }
 
 	end
@@ -574,22 +585,30 @@ function _update60()
 	end
 
 	if (state.phase != gamephase) then
-		if (state.phase == introphase and dialog[introphase] == nil) state.phase = gamephase
-		if (state.phase == outrophase and dialog[outrophase] == nil) state.phase = gamephase
-		if (state.phase == keyitemphase and dialog[keyitemphase] == nil) state.phase = gamephase
-
 		if (state.phase == introphase and hasplayedintro == true) then
+			state.phase = gamephase
+			dialogindex = 1
+		elseif (state.phase == keyitemphase and hasplayedkey == true) then
+			state.phase = gamephase
+			dialogindex = 1
+		elseif (state.phase == outrophase and hasplayedoutro == true) then
 			state.phase = gamephase
 			dialogindex = 1
 		elseif (state.phase != gamephase and btnp() > 0) then
 			dialogindex += 1
 
-			if (dialogindex > #dialog[state.phase]) then
+			if (dialog[state.phase] and dialogindex > #dialog[state.phase]) then
 				if (state.phase == introphase) hasplayedintro = true
+				if (state.phase == keyitemphase) hasplayedkey = true
+				if (state.phase == outrophase) hasplayedoutro = true
 				state.phase = gamephase
 				dialogindex = 1
 			end
 		end
+
+--		if (state.phase == introphase and dialog[introphase] == nil) state.phase = gamephase
+--		if (state.phase == outrophase and dialog[outrophase] == nil) state.phase = gamephase
+--		if (state.phase == keyitemphase and dialog[keyitemphase] == nil) state.phase = gamephase
 
 		return
 	end
@@ -703,7 +722,11 @@ function _update60()
 
 	-- did the player win?
 	if (player.x == exit.x and player.y == exit.y) then
-		nextlevel()
+		if (hasplayedoutro or dialog[state.phase] == nil) then
+			nextlevel()
+		else
+			state.phase = outrophase
+		end
 	end
 
 	-- animate map tiles
@@ -752,11 +775,32 @@ function draw_endmenu()
 	-- draw map
 	map(maprect[1], maprect[2], maprect[5]*gridsize, maprect[6]*gridsize, maprect[3], maprect[4])
 
+	-- draw dialog
+	if (state.phase != gamephase and dialog[state.phase]) then
+		local d = dialog[state.phase][dialogindex]
+		if (d and d[1] == "karen") then
+			drawbossbox(d)
+		else
+			drawbox(d)
+		end
+	end
+
+	if (state.phase == introphase and dialogindex < 2) return
+
 	-- draw sprites
 	for i=1, dimensions do
 		for j=1, dimensions do
 			sprgrid(sprites[i][j], i, j)
 			sprgrid(animals[i][j], i, j)
+		end
+	end
+
+
+	if (state.phase == introphase) return
+
+	-- draw keys for our names
+	for i=1, dimensions do
+		for j=1, dimensions do
 			sprgrid(blocks[i][j], i, j)
 		end
 	end
@@ -778,10 +822,6 @@ function draw_endmenu()
 	print ("ava", x, y, 7)
 	print ("rachel", x, y+16, 7)
 	print ("jessica", x, y+32, 7)
-
-	if (state.phase != gamephase and dialog[state.phase]) then
-		drawbox(dialog[state.phase][dialogindex])
-	end
 
 end
 
@@ -846,24 +886,35 @@ function draw_level()
 		if (player.goalneededcount > 0) s = s .. "  " .. player.goaltext .. ": " .. player.goalcount .. "/" .. player.goalneededcount
 		print(s)
 
-	if (state.phase != gamephase and dialog[state.phase] and (state.phase == introphase and hasplayedintro == false)) then
-		drawbox(dialog[state.phase][dialogindex])
+	if (state.phase != gamephase and dialog[state.phase]) then
+		if (state.phase == introphase and hasplayedintro == true) return
+		if (state.phase == keyitemphase and hasplayedkey == true) return
+		if (state.phase == outrophase and hasplayedoutro == true) return
+
+		local d = dialog[state.phase][dialogindex]
+		if (d and d[1] == "karen") then
+			drawbossbox(d)
+		else
+			drawbox(d)
+		end
 	end
 end
 
 function nextlevel()
 	state.lvl += 1
 	hasplayedintro = false
+	hasplayedkey = false
+	hasplayedoutro = false
 	if (state.lvl == 9) state.menu = endmenu
 	_init()
 end
 
 function drawbossbox(sa)
-	drawdialogbox(sa, dialogbox.bcornerarrow, dialogbox.bcorner, dialogbox.bside, dialogbox.btop)
+	drawdialogbox(sa, dialogbox.bcornerarrow, dialogbox.bcorner, dialogbox.bside, dialogbox.btop, true)
 end
 
 function drawbox(sa)
-	drawdialogbox(sa, dialogbox.corner, dialogbox.corner, dialogbox.side, dialogbox.top)
+	drawdialogbox(sa, dialogbox.corner, dialogbox.corner, dialogbox.side, dialogbox.top, false)
 end
 
 -- sound turned off until someone who actually knows sounds can redo them
@@ -872,12 +923,34 @@ function playsound(s)
 end
 
 -- number of lines to fit, special top left corner, regular corner, side, top
-function drawdialogbox(sa, sc, c, s, t)
-	if (sa == nil) return
+function drawdialogbox(text, sc, c, s, t, isboss)
+	if (text == nil) return
+
 	local xmin = 0
 	local xmax = 15
 	local ymax = 14
-	local ymin = ymax - #sa
+	local ymin = ymax - (#text-1)
+
+	if (isboss) xmin += 1
+	if (isboss) c = sc
+
+	-- noah is left aligned, everyone else is right aligned
+	local namex = xmin
+	if (text[1] != "") then 
+		if (text[1] != "noah") then
+			local offset = 128 - (#text[1])*4 - 7
+
+			local bgcolor = 7
+			if (isboss) bgcolor = 10
+
+			rectfill(offset-2, ymin*8-7, 128-7, ymax*8-9, bgcolor)
+			print (text[1], offset, ymin*8-6, 0)
+		else
+			rectfill(xmin*8+7, ymin*8-7, xmin*8 + (#text[1])*4 + 9, ymax*8-1, 7)
+			print (text[1], xmin*8+9, ymin*8-6, 2)
+		end
+	end
+
 
 	for i = xmin, xmax do
 		for j = 0, 15 do
@@ -909,9 +982,15 @@ function drawdialogbox(sa, sc, c, s, t)
 
 
 	-- text
-	for i=1, #sa do
-		print (sa[i], xmin*8 + 5, ymin*8+8*(i-1) + 5, 0)
+	for i=2, #text do
+		print (text[i], xmin*8 + 5, ymin*8+8*(i-2) + 5, 0)
 	end
+
+	-- radio
+	local box = dialogbox.radioon
+	if (tick % 50 < 25) box = dialogbox.radiooff
+	if (isboss) spr(box, 0, (ymin - 1)*8)
+
 end
 
 -- draw sprite with flipping, 0 = none, 1 = x, 2 = y, 3 = x+y
@@ -1881,21 +1960,21 @@ ffff000ff99fff80000000000000000000000000000000008888888800555000008880000c44cc00
 00f99ff99ffff800000000000900009999999009999000a002000020055755000555550004aaa2c0c55611c0c55611c00000000004aaa4c000555070006660c0
 00f0fff0099988800000000099900998998990999899099900000000009990000095900000a0a80007999c0007999c000000000070a0a00700000070000000c0
 55555555555555555555555555555555004444000044440000000000000000000000000000000044440000000000000000000000000000000000000000000000
-5ccccc755bbbb3b5511111455433bbb5044bb440044114400000000000000000000000000000444444440000000000000000000000000000000000000000d000
-5cccc7755b3b3bb551311115543bbbb504bbbb4004111140ccccccccbbbbbbbb5555555500004444444400000000000000000000000000000000000000dd000d
-5ccc77c553b33b35531141155433bbb504bbbb4004111140c111111cb333333b500000050000444444440000000000000000000000000000000000000d0dd0d0
-5cc77c755b3333b5513114155433343504bbb94004111940c111111cb333333b50000005000044444444000000000000000000000000000000000000dddddd00
-5555555555555555555555555555555504bbbb4004111140ccccccccbbbbbbbb555555550000444444440000000000000000000000000000000000000dddd0d0
-5000000550000005500000055000000504bbbb40041111401cc77cc13bb77bb30557755000004409904400000000000000000000000000000000000000d0000d
-5000000550000005500000055000000504bbbb400411114001cccc1003bbbb3000555500000090099009000000000000000000000000000000000000000d0000
-00444400004444000044440000444400000000000000000000000500000005000000050000000000000000000000000000000000000000000000000000000000
-044bb4400443344004433440044cc440000000000000000000000500aa0005aa000005000000000000000000000000000000000000000000000000000555a500
-04baab40043aa3400433334004cccc400000055555000000055555500aa55aa00055550000000000000000000000000000000000000000000000000000555a00
-04babb40043a33400433334004cccc400000550005500000055050500550505000505500000000000000000000000000000000000000000000000000cc040cc0
-04baab40043aa3400433394004ccc9400000500000500000050505500aa50aa000550500000000000000000000000000000000000000000000000000cc444c00
-04babb40043a33400433334004cccc40000111000bbb000005555550aa5555aa005555000000000000000000000000000000000000000000000000000ceeecc0
-04baab40043aa3400433334004cccc40111151000b5bbbbb05655650056556500056550000000000000000000000000000000000000000000000000004aaa4c0
-04bbbb40043333400433334004cccc4011015cc0335b0b0b05555550055555500055550000000000000000000000000000000000000000000000000000a0a000
+5ccccc755bbbb3b5511111455433bbb5044bb440044114400000000000000000000000000000444444440000000000000900000000000000000000000000d000
+5cccc7755b3b3bb551311115543bbbb504bbbb4004111140ccccccccbbbbbbbb5555555500004444444400000000000090000000000000000000000000dd000d
+5ccc77c553b33b35531141155433bbb504bbbb4004111140c111111cb333333b50000005000044444444000000000000d000000000000000000000000d0dd0d0
+5cc77c755b3333b5513114155433343504bbb94004111940c111111cb333333b50000005000044444444000000000000d00000000000000000000000dddddd00
+5555555555555555555555555555555504bbbb4004111140ccccccccbbbbbbbb555555550000444444440000000eeeeeeeeee00000000000000000000dddd0d0
+5000000550000005500000055000000504bbbb40041111401cc77cc13bb77bb3055775500000440990440000000fffff4fffe000000000000000000000d0000d
+5000000550000005500000055000000504bbbb400411114001cccc1003bbbb300055550000009009900900000004ffffff4fe0000000000000000000000d0000
+004444000044440000444400004444000000000000000000000005000000050000000500000a0440000a0060000fff4fffffe000000000000000000000000000
+044bb4400443344004433440044cc440000000000000000000000500aa0005aa0000050000ee0044000ee060000777777777e00000000000000000000555a500
+04baab40043aa3400433334004cccc400000055555000000055555500aa55aa0005555000eee0004000eee60000ff4fff4ffe000000000000000000000555a00
+04babb40043a33400433334004cccc40000055000550000005505050055050500050550045f54004000666600004fffffff4e0000000000000000000cc040cc0
+04baab40043aa3400433394004ccc9400000500000500000050505500aa50aa0005505000fff00440666d6d007777777777777700000000000000000cc444c00
+04babb40043a33400433334004cccc40000111000bbb000005555550aa5555aa005555000044444076666660006666666666660000000000000000000ceeecc0
+04baab40043aa3400433334004cccc40111151000b5bbbbb05655650056556500056550000444400766666600000000000000000000000000000000004aaa4c0
+04bbbb40043333400433334004cccc4011015cc0335b0b0b05555550055555500055550004404400066666600000000000000000000000000000000000a0a000
 0044440000444400004444000044440010011c5553bb000b00000000000000000000000000000000000000055555555500000000000000000000000000000000
 044cc44004411440044224400440044000000cc0330000000000000000000000000000000000000555555555bbbbbbb500000000000000000000000000000000
 04caac40041aa140042aa2400400004000000c000300000000000000000000000000000555555555bbbbbbb6777bbbb500000000000000000000000000000000
