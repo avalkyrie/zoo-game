@@ -27,10 +27,14 @@ dimensions = 16
 -- sprite indexes
 index = {
 	player = 64,
+	playerscuba = 087,
 	death = 191,
+	shockdeath = 190,
 	
 	playerbow = 185,
 	playergrad = 169,
+	playergradscuba = 168,
+
 	 
 	block = 58,
 	wblock = 60,
@@ -176,7 +180,8 @@ function _init()
 	player.sprite = index.player
 	player.isvertical = false
 	player.oxygen = -1
-	player.helditem = nil
+	player.isbubbleslide = false
+ 	player.helditem = nil
 	player.goaltext = nil
 	player.goalneededcount = 0
 	player.goalcount = 0
@@ -290,8 +295,6 @@ function _init()
 
 		animals[8][3] = index.bwhale
 		animals[7][3] = index.fwhale
-
-		--sprites[5][2] = index.bubble
 		sprites[2][5] = index.key
 
 		dialog[introphase] = {
@@ -348,6 +351,7 @@ function _init()
 		player.x = 1
 		player.y = 8
 		player.oxygen = 6
+		player.sprite = index.playerscuba
 		exit.x = 1
 		exit.y = 0
 		exit.sprite = index.cexit
@@ -370,22 +374,23 @@ function _init()
 }
 	elseif (state.lvl == 5) then
 		-- aquarium 2 
-		maprect = {24, 16, 9, 11, 3.5, 2.5}
+		maprect = {24, 16, 9, 10, 3.5, 2.5}
 		player.x = 5
 		player.y = 1
 		player.oxygen = 6
+		player.sprite = index.playerscuba
 		player.goaltext = "grads"
 		player.goalneededcount = 4
 		exit.x = 5	  
 		exit.y = 0
 		exit.sprite = index.oexit
-		aa(sprites, index.tank, {4,1,6,1,8,2,1,4,4,5,7,7,3,8,1,10,5,10})
-		aa(sprites, index.bubble, {6,4,9,9,3,11})
+		aa(sprites, index.tank, {4,1,6,1,8,2,1,4,4,5,8,7,3,8,7,10})
+		aa(sprites, index.bubble, {6,4,9,9})
 		aa(sprites, index.grad, {9,3,6,3,6,7,7,9})
 		animals[4][4] = index.fturtle
 		animals[3][4] = index.bturtle
-		animals[4][7] = index.flturtle
-		animals[5][7] = index.blturtle
+		animals[3][7] = index.bturtle
+		animals[4][7] = index.fturtle
 		aa(animals, index.fish, {8,1,9,1,6,8,7,8})
 		aa(animals, index.jelly1, {4,3,5,3,6,6,7,6})
 
@@ -643,8 +648,16 @@ function _update60()
 	local b = btnp()
 	if (b > 0 and player.sdx == 0 and player.sdx == 0) player.buff = b
 
+	-- start sliding for bubble bounces
+	if (sprites[player.x][player.y] == index.bubble) then
+		player.sdx = 0
+		player.sdy = -1
+		player.isbubbleslide = true
+	end
+
+
 	-- skip player movement while animals are moving
-	if (player.animaldelay > 0) then
+	if (player.animaldelay > 0 and player.isbubbleslide == false) then
 		player.animaldelay -= 1
 		
 		if (player.animaldelay == 0) then
@@ -676,7 +689,13 @@ function _update60()
 			if (moveplayer(player.sdx,player.sdy) == false) then
 				player.sdx = 0
 				player.sdy = 0
-				player.animaldelay = 10
+
+				if (player.isbubbleslide) then
+					player.animaldelay = 25
+					player.isbubbleslide = false
+				else
+					player.animaldelay = 10
+				end
 			end
 		end
 	else
@@ -1266,12 +1285,6 @@ function moveanimal(a, up, down, i, j, leftright, fx)
 
 end
 
-function ispushablebiganimal(x, y)
-	local a = animals[x][y]
-	if (a==index.fturtle or a==index.flturtle or a==index.bturtle or a==index.blturtle) return true
-	return false
-end
-
 -- returns (sprite, sfx) if picked up
 function canpickup(x, y)
 	if (x <= 0 or y <= 0) return nil
@@ -1306,7 +1319,7 @@ function pickup(x, y)
 		
 		if (s == index.grad) then
 			player.helditem = s
-			player.sprite = index.playergrad
+			player.sprite = index.playergradscuba
 		end
 		
 		playsound(fx)
@@ -1356,7 +1369,12 @@ function updatewornitems()
 		if (wearitem(x, y, player.helditem)) then
 			player.helditem = nil
 			player.goalcount += 1
-			player.sprite = index.player
+
+			if (player.sprite == index.playergradscuba) then
+				player.sprite = index.playerscuba
+			else
+				player.sprite = index.player
+			end
 		end
 	end, player.x, player.y)
 	
@@ -1424,34 +1442,33 @@ end
 function checkanimalattack()
 	local killsfx = 0
 
+	local killedbyjelly = false
+	local killed = false
+
 	for i=1, maprect[3] do
 		for j=1, maprect[4] do
 			local a = animals[i][j]
 			if (band(fget(a), fdeath) > 0) then
 				-- check 4 adjacent squares only (not diagonals)
-				if ((player.x==i-1 or player.x==i+1) and player.y==j) killsfx = 3
-				if ((player.y==j-1 or player.y==j+1) and player.x==i) killsfx = 3
-
+				if ((player.x==i-1 or player.x==i+1) and player.y==j) killed = true
+				if ((player.y==j-1 or player.y==j+1) and player.x==i) killed = true
 			end
 
 			-- jelly death
 			if (a==index.ujelly1 or a==index.ujelly2 or a==index.jelly1 or a==index.jelly2) then
-				if ((player.x==i-1 or player.x==i+1) and player.y==j) killsfx = 4
+				if ((player.x==i-1 or player.x==i+1) and player.y==j) killedbyjelly = true
 				if (a==index.ujelly1 or a==index.ujelly2) then
-					if (player.y==j-1 and player.x==i) killplayer(4) killsfx = 4
+					if (player.y==j-1 and player.x==i) killedbyjelly = true
 				else
-					if (player.y==j+1 and player.x==i) killsfx = 4
+					if (player.y==j+1 and player.x==i) killedbyjelly = true
 				end
 			end
 		end
 	end
 
-	if (killsfx > 0) then
-		playsound(killsfx)
-		return true
-	end
-
-	return false
+	if (killedbyjelly) return true, true
+	if (killed) return true, false
+	return false, false
 end
 
 function isjelly(x, y)
@@ -1576,12 +1593,13 @@ function placechild(bred, x, y)
 	return false
 end
 
-function killplayer(s)
+function killplayer(s, isshock)
 	if (s) playsound(s)
-	
+
 	--blkmsg = "death"
 	player.delay = 60
 	player.sprite = index.death
+	if (isshock) player.sprite = index.shockdeath
 	player.delayfunc = _init
 end
 
@@ -1594,8 +1612,9 @@ function checkdeath()
 	end
 
 	-- death by animal
-	if (checkanimalattack()) then
-		killplayer()
+	local killed, jellykilled = checkanimalattack()
+	if (killed or jellykilled) then
+		killplayer(1, jellykilled)
 		return true
 	end
 
@@ -1647,6 +1666,7 @@ function canwalkto(x, y, flags)
 
 	if (animals[x][y]) return false
 	if (blocks[x][y]) return true
+	if (sprites[x][y] and sprites[x][y] == index.bubble) return true
 	if (sprites[x][y] and canpickup(x, y) == false) return false
 	if (band(flags, fwalkable) > 0) return true
 	if (band(flags, fwater) > 0) return true
@@ -1724,14 +1744,14 @@ function moveplayer(dx, dy)
 	end
 
 	-- try to move a turtle vertically
-	if (isturtle(x, y) and dy != y) then
+	if (isturtle(x, y) and player.isbubbleslide == false) then
 		if (canpushblockto(nx, ny, nflags)) then
 			local a = animals[x][y]
 			local deltax = 0
 			if (a == index.fturtle or a == index.blturtle) deltax = -1
 			if (a == index.flturtle or a == index.bturtle) deltax = 1
 
-			if (canpushblockto(nx+deltax, ny, fget(mgetspr(nx-1, ny)))) then
+			if (canpushblockto(nx+deltax, ny, fget(mgetspr(nx+deltax, ny)))) then
 				animals[nx][ny] = animals[x][y]
 				animals[x][y] = nil
 
@@ -1743,15 +1763,19 @@ function moveplayer(dx, dy)
 		end
 	end
 
+	-- if we are being propelled by a bubble, stop when we hit sprites
+	if (player.isbubbleslide == true and (isturtle(x, y))) return false
+
 	-- if we are sliding and not currently on ice, stop moving
-	if ((player.sdx != 0 or player.sdy != 0) and band(fget(mgetspr(player.x,player.y)), fice) == 0) return false
+	if (player.isbubbleslide == false and (player.sdx != 0 or player.sdy != 0) and band(fget(mgetspr(player.x,player.y)), fice) == 0) return false
+
 
 	-- if we are sliding and now standing on an item, stop moving
 	if ((player.sdx != 0 or player.sdy != 0) and canpickup(player.x, player.y)) return false
 
 	-- normal slide or walk
 	if (canwalkto(x, y, flags)) then
-		if (moveisslide(player.x, player.y, dx, dy)) then
+		if (moveisslide(player.x, player.y, dx, dy) or player.isbubbleslide) then
 			player.sdx = dx
 			player.sdy = dy
 		else 
@@ -1944,14 +1968,14 @@ cc444c00ccc44400ccc44400ccc44400ccc44400cccccc00cccccc0000444ccc00444ccc00444ccc
 ffffff8800000000000000000a90a988888899889a9989a0000000000000000011c11c1100c11c00011c11100c1001c00c1771c000000000b1c4444000444440
 fff9998ff000000000000000a9999888888888888998889a00000000000000001c0919c100091900001111001cc11cc11cc11cc1000000000044400000444400
 0ffffffff8800000000000009988888888888888888888890000000000000000c011110c001111000009090001cccc1001cccc10000000000440440004004400
-0000000000000000000f888000000000000000000000000000000000055a55000000000000000000000000000000000000000000007777000077770000077700
-0000f0000000fff00ffff80000000000000a000000a00a00000000000055a00d000000000555a50000000000000000000000000007ccc57007ccc570007ccc70
-0f8f0000000ff99fffff9000000000a000a0000000aa00000000aa000dddd0dd0000000000555a000000000000000000000007007c5555c77c5555c707c55557
-ffffff00fffffffffffff90000000a000a9a0a000a000000555555a5dd0dddd000000000cc040cc0000000000000000000007770756665c7756665c707566657
-00fffffffff9ffff9999ff800a0000a9a99900a009a0a000005555a0ddddddd000000000cc444c00000000009000000990077779765556c7765556707c655567
-000ff99ffff099fff000988800a00a9999899999a9900a00005555a00dddd0dd000000000ceeecc0000000000a9009a00a9779a07c666cc77c666c707cc666c7
-0fff9009ffff0999fff800080a9a099898899989999999a00055550000d0000d0000000004aaa4c0000000009aa99aa99aa99aa907666c700766670007c66670
-00090000900f000099888000a999a988888899889988999a00000000000d00000000000000a0a0000000000009aaaa9009aaaa90007777000077700000777700
+0000000000000000000f888000000000000000000000000000000000055a55000555a55000000000000000000000000000000000007777000077770000077700
+0000f0000000fff00ffff80000000000000a000000a00a00000000000055a00d00555a000555a50000000000000000000000000007ccc57007ccc570007ccc70
+0f8f0000000ff99fffff9000000000a000a0000000aa00000000aa000dddd0dd0c99990000555a000000000000000000000007007c5555c77c5555c707c55557
+ffffff00fffffffffffff90000000a000a9a0a000a000000555555a5dd0dddd0c96669c0cc040cc0000000000000000000007770756665c7756665c707566657
+00fffffffff9ffff9999ff800a0000a9a99900a009a0a000005555a0ddddddd0cc999c00cc444c00000000009000000990077779765556c7765556707c655567
+000ff99ffff099fff000988800a00a9999899999a9900a00005555a00dddd0dd0ceeecc00ceeecc0000000000a9009a00a9779a07c666cc77c666c707cc666c7
+0fff9009ffff0999fff800080a9a099898899989999999a00055550000d0000d04aaa4c004aaa4c0000000009aa99aa99aa99aa907666c700766670007c66670
+00090000900f000099888000a999a988888899889988999a00000000000d000000a0a00000a0a0000000000009aaaa9009aaaa90007777000077700000777700
 000f00000008000000000000000000000000000000000000080000800055500000555000000000000c111c000c111c0000000000070009770077700700ccc00c
 0f8f0000ff8800000000000000000000000000000000000088800888005950000055500000ccc0000c191c000c191c000000000070ccc907075557700c666cc0
 ffff000ff99fff80000000000000000000000000000000008888888800555000008880000c44cc000c111c000c111c00000000000c99990075555570c66666c0
@@ -1993,7 +2017,7 @@ ffff000ff99fff80000000000000000000000000000000008888888800555000008880000c44cc00
 00010000000c000000030000000b0000a077777700777777a07777777777777772777777727777777777777755595a5a5bb5bb55000000000000000000000000
 00011100000ccc0000033300000bbb00a07777770077777700777777777777777277777772777777777777770555555555555550000000000000000000000000
 __gff__
-0043438000810000000500010100000000a1a180000001000005010101000000050505050500000101010101808001010000434305050100008080808181010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040400000
+0043438000810000000500010100000000a1a180000001000005010101000000050505050500000101010101808001010000434305050100008080808181010100000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000040400000
 0000000000000000000000000000000000000040404000000000000000000000000000404040000000000000000000000000004040400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000
 __map__
 2d202020202020202c20202020202020000a0a0a000a0a0a0a0a0a0a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002929292929292929292929292929292936363616161616163616363636161636
