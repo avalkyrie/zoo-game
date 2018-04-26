@@ -220,7 +220,7 @@ function _init()
 		exit.sprite = index.cexit
 		aas(blocks, {198,3,2,199,4,2,198,5,2}) -- trash cans
 		aas(sprites, {192,1,7,193,1,4,194,10,7,195,10,4}) -- signs
-		aas(sprites, {197,1,6,196,10,3,196,10,6}) -- static doors
+		--aas(sprites, {197,1,6,196,10,3,196,10,6}) -- static doors
 		aas(sprites, {201,2,1,202,6,1})
 		sprites[4][1] = index.key
 		aa(animals, index.rabbit, {4,5,6,6})
