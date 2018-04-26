@@ -610,10 +610,11 @@ function _update60()
 --		if (state.phase == outrophase and dialog[outrophase] == nil) state.phase = gamephase
 --		if (state.phase == keyitemphase and dialog[keyitemphase] == nil) state.phase = gamephase
 
-		return
+	
 	end
 
-	if (state.menu != game) return
+
+	if (state.phase != gamephase) return
 
 	if (state.menu == endmenu) then
 		-- z/x to reset?
