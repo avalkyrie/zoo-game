@@ -1000,17 +1000,32 @@ function drawdialogbox(text, sc, c, s, t, isboss)
 	-- background
 	rectfill(xmin*8+8, ymin*8+8, xmax*8-1, ymax*8-1, 7)
 
-
-	-- text
-	for i=2, #text do
-		print (text[i], xmin*8 + 5, ymin*8+8*(i-2) + 5, 0)
-	end
+	-- text (fancy currently disabled)
+	printfancytext(false, false, text, xmin, ymin)
 
 	-- radio
 	local box = dialogbox.radioon
 	if (tick % 50 < 25) box = dialogbox.radiooff
 	if (isboss) spr(box, 0, (ymin - 1)*8)
 
+end
+
+function printfancytext(iswavy, israinbow, text, xmin, ymin)
+	local color = 12 - (tick / 20) % 4
+	if (israinbow == false) color = 0
+
+	for i=2, #text do
+		for j=1, #(text[i]) do
+			local ywave = 0
+			if (iswavy) ywave = flr(cos((tick+j)/35) * 3)
+			if (ywave >= 4) ywave = 3
+
+			print (sub(text[i], j, j), xmin*8 + (j-1)*4 + 5, (ymin+(i-2))*8 + 5 + ywave, color)
+
+			if (israinbow == true and c != " ") color += 1
+			if (color > 12) color = 8
+		end
+	end
 end
 
 -- draw sprite with flipping, 0 = none, 1 = x, 2 = y, 3 = x+y
