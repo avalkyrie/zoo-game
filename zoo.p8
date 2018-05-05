@@ -460,13 +460,14 @@ function _update60()
 
 	-- buffer last key press unless we are sliding/falling
 	local b = btnp()
-	if (b > 0 and player.sdx == 0 and player.sdx == 0) player.buff = b
+	if (b > 0 and player.sdx == 0 and player.sdy == 0) player.buff = b
 
 	-- start sliding for bubble bounces
 	if (sprites[player.x][player.y] == index.bubble) then
 		player.sdx = 0
 		player.sdy = -1
 		player.isbubbleslide = true
+		sprites[player.x][player.y] = nil
 	end
 
 	-- skip player movement while animals are moving
@@ -684,8 +685,14 @@ function draw_level()
 	-- draw player
 	local pox = (player.x + maprect[5] - 1)*gridsize + player.sdx*player.sframe
 	local poy = (player.y + maprect[6] - 1)*gridsize + player.sdy*player.sframe
-	drawoutline(player.sprite, pox, poy)
-	spr(player.sprite, pox, poy)
+
+	if (player.isbubbleslide) then
+		-- swap between the two bubble animations and flip animation every 4 squares
+		spr(174 + player.y % 2, pox, poy, 1, 1, flr(player.y/2) % 2 == 0)
+	else
+		drawoutline(player.sprite, pox, poy)
+		spr(player.sprite, pox, poy)
+	end
 
 	-- draw block pushed by player one square ahead of the player
 	if (player.sblock) spr(index.block, pox+gridsize*player.sdx, poy+gridsize*player.sdy)
