@@ -751,7 +751,6 @@ function drawdialogbox(text, sc, c, s, t, isboss)
 	local ymin = ymax - (#text-1)
 
 	if (isboss) xmin += 1
-	if (isboss) c = sc
 
 	-- noah is left aligned, everyone else is right aligned
 	local namex = xmin
@@ -777,7 +776,9 @@ function drawdialogbox(text, sc, c, s, t, isboss)
 			local y = j*gridsize
 
 			-- corners
-			if (i==xmin and j==ymin) sprflip(c, x, y, 0)
+			if (i==xmin and j==ymin and isboss) sprflip(sc, x, y, 0)
+			if (i==xmin and j==ymin and isboss == false) sprflip(c, x, y, 0)
+
 			if (i==xmin and j==ymax) sprflip(c, x, y, 2)
 			if (i==xmax and j==ymin) sprflip(c, x, y, 1)
 			if (i==xmax and j==ymax) sprflip(c, x, y, 3)
