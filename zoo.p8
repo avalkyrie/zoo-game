@@ -12,9 +12,8 @@ outrophase = "outro"
 keyitemphase = "keyitem"
 gamephase = "game"
 
-state={menu=startmenu,lvl=0,phase=introphase}
+state={menu=game,lvl=4,phase=introphase}
 
-text = {}
 maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
 
 -- player
@@ -23,18 +22,18 @@ player = {}
 -- consts
 gridsize = 8
 dimensions = 16
+textwidth = 4
 
 -- sprite indexes
 index = {
 	player = 64,
-	playerscuba = 087,
+	playerscuba = 87,
 	death = 191,
 	shockdeath = 190,
 	
 	playerbow = 185,
 	playergrad = 169,
 	playergradscuba = 168,
-
 	 
 	block = 58,
 	wblock = 60,
@@ -108,24 +107,6 @@ hasplayedintro = false
 hasplayedkey = false
 hasplayedoutro = false
 
-dialogbox = {
-	radioon = 214,
-	radiooff = 215,
-	bcorner = 245,
-	bcornerarrow = 244,
-	bside = 246,
-	btop = 247,
-	corner = 248,
-	side = 249,
-	top = 250,
-}
-
--- animations: todo: key is 1st sprite, value is max sprite #
-anim = {
-	water1 = 1,
-	water2 = 2,
-}
-
 -- sprite flags
 fwalkable = 0x1
 fwater = 0x2
@@ -146,15 +127,11 @@ animals = {}
 blocks = {}
 exit = {}
 
--- temp structures
-moved = {}
-
--- ui
+-- counters
 steps = 0
 asteps = 0
 
 function _init()
-
 	reload(0x2000, 0x2000, 0x1000) -- reload map tiles
 
 	state.phase = introphase
@@ -185,7 +162,6 @@ function _init()
 	player.goaltext = nil
 	player.goalneededcount = 0
 	player.goalcount = 0
-	
 	player.delay = 0
 	player.delayfunc = nil
 
@@ -196,25 +172,18 @@ function _init()
 	dialogindex = 1
 
 	-- clear sprites between levels
-	for i = 1, dimensions do
-		sprites[i] = {}
-		animals[i] = {}
-		blocks[i] = {}
-		for j = 1, dimensions do
-			sprites[i][j] = nil
-			animals[i][j] = nil
-			blocks[i][j] = nil
-		end
-	end
+	sprites = emptyarray(dimensions)
+	animals = emptyarray(dimensions)
+	blocks = emptyarray(dimensions)
 
 	-- config levels
 	if (state.lvl == 0) then
 		-- start menu
-		maprect = {112, 0, 16, 16, 0, 0}
+		maprect = {112, 0, dimensions, dimensions, 0, 0}
 		aa(animals, index.rabbit, {2,9,2,10,1,8})
 		aa(animals, index.bbird1, {2,5})
 		aa(animals, index.pbird2, {15,2,16,5})
-		animals[5][13] = index.monkey
+		aa(animals, index.monkey, {5,13})
 	elseif (state.lvl == 1) then
 		-- plaza
 		maprect = {0, 24, 10, 8, 3, 3}
@@ -227,60 +196,21 @@ function _init()
 		aas(sprites, {192,1,7,193,1,4,194,10,7,195,10,4}) -- signs
 		--aas(sprites, {197,1,6,196,10,3,196,10,6}) -- static doors
 		aas(sprites, {201,2,1,202,6,1})
-		sprites[4][1] = index.key
 		aa(animals, index.rabbit, {4,5,6,6})
-
+		aa(sprites, index.key, {4,1})
 		dialog[introphase] = {
-{"announcer","birnam zoo will be closing in\n",
-"in 5 min"},
-
-{"noah", "finally"},
-
-{"noah", "closing time. i hope you had a\n",
-"great time at the zoo!"},
-
-{"mom", "now kids, what do you say\n",
-"to noah the zookeeper for\n",
-"showing us around today?"},
-
-{"kids", "thank you noah!"},
-
-{"noah", "no problem, see you next time!"},
-
---"----------------",
-
-{"noah", "i thought this day would never\n",
-"end! i can finally go home."},
-
---"----------------",
-
-{"note on door", "noah, can you\n",
-"please lock the office when\n",
-"you're done? had to leave\n",
-"early. sorry! exhibits should\n",
-"be locked already!\n",
-"                    ~karen"},
-
-{"noah", "of course. perfect.\n",
-"wait, where are my keys? they\n",
-"were on my belt a second\n",
-"ago.."},
-
---"----------------",
-
-{"noah", "mackers has them! you stupid\n",
-"monkey, come back here!"},
-
---"----------------",
---"----------------",
-
-}
-		dialog[keyitemphase] = {
-{"noah", "the key to the west garden!\n",
-"now if i can find mackers...",}
-}
-		--dialog[outrophase] = {}
-
+			{"announcer","birnam zoo will be closing in","in 5 min"},
+			{"noah", "finally"},
+			{"noah", "closing time. i hope you had a","great time at the zoo!"},
+			{"mom", "now kids, what do you say","to noah the zookeeper for","showing us around today?"},
+			{"kids", "thank you noah!"},
+			{"noah", "no problem, see you next time!"},
+			{"noah", "i thought this day would never","end! i can finally go home."},
+			{"note on door", "noah, can you","please lock the office when","you're done? had to leave","early. sorry! exhibits should","be locked already!","                    ~karen"},
+			{"noah", "of course. perfect.","wait, where are my keys? they","were on my belt a second","ago.."},
+			{"noah", "mackers has them! you stupid","monkey, come back here!"}
+		}
+		dialog[keyitemphase] = {{"noah", "the key to the west garden!","now if i can find mackers..."}}
 	elseif (state.lvl == 2) then
 		-- w. garden 1
 		maprect = {14, 24, 10, 8, 3, 3}
@@ -289,26 +219,13 @@ function _init()
 		exit.x = 11
 		exit.y = 4
 		exit.sprite = index.cexit
-
 		aa(blocks, index.block, {8,6,2,4,1,5,3,5,2,6,5,1,5,3,4,1,4,2,3,1})
 		aa(animals, index.rabbit, {7,7,9,8})
-
 		animals[8][3] = index.bwhale
 		animals[7][3] = index.fwhale
 		sprites[2][5] = index.key
-
-		dialog[introphase] = {
-{"noah", "wait! at least he dropped the\n",
-"rainforest key before he left."}
-}
-		dialog[keyitemphase] = {
-{"noah", "the key! guess i can go\n",
-"back or mess around here for\n",
-"a bit..."}
-}
-		dialog[outrophase] = {
-}
-
+		dialog[introphase] = {{"noah", "wait! at least he dropped the","rainforest key before he left."}}
+		dialog[keyitemphase] = {{"noah", "the key! guess i can go","back or mess around here for","a bit..."}}
 	elseif (state.lvl == 3) then
 		-- rainforest 1
 		maprect = {0, 8, 8, 8, 4, 4}
@@ -321,18 +238,7 @@ function _init()
 		sprites[3][6] = index.key2
 		blocks[6][4] = index.block
 		animals[2][5] = index.usnake
-
-		
-		dialog[introphase] = {
-{"noah", "that snake doesn't look\n",
-"very friendly..."}
-}
-		dialog[keyitemphase] = {
-
-}
-		dialog[outrophase] = {
-}
-
+		dialog[introphase] = {{"noah", "that snake doesn't look","very friendly..."}}
 	elseif (state.lvl == 10) then
 		-- rainforest 2 - unused
 		maprect = {8, 8, 16, 8, 0, 4}
@@ -356,22 +262,9 @@ function _init()
 		exit.y = 0
 		exit.sprite = index.cexit
 		sprites[8][8] = index.key
-		aa(animals, index.jelly1, {1,1,6,6})
-		aas(animals, {index.flturtle,7,2,index.blturtle,8,2})
-		aas(animals, {index.ujelly1,2,1})
+		aas(animals, {index.flturtle,7,2,index.blturtle,8,2,index.ujelly1,2,1,index.jelly1,1,1,index.jelly1,6,6})
 		aa(sprites, index.tank, {2,3, 7,3, 5,7, 8,6})
-
-		
-		dialog[introphase] = {
-{"noah", "mackers, when did you learn to\n",
-"scuba dive?"}
-}
-		dialog[keyitemphase] = {
-
-}
-		dialog[outrophase] = {
-
-}
+		dialog[introphase] = {{"noah", "mackers, when did you learn to","scuba dive?"}}
 	elseif (state.lvl == 5) then
 		-- aquarium 2 
 		maprect = {24, 16, 9, 10, 3.5, 2.5}
@@ -393,28 +286,16 @@ function _init()
 		animals[4][7] = index.fturtle
 		aa(animals, index.fish, {8,1,9,1,6,8,7,8})
 		aa(animals, index.jelly1, {4,3,5,3,6,6,7,6})
-
-		
 		dialog[introphase] = {
-{"karen", "noah? do you copy? noah?"},
-{"noah", "karen? i'm a bit underwater",
-"at the moment..."},
-{"karen", "you in the aquarium?",
-"perfect!"},
-{"karen", "the schools of fish passed",
-"all their tests today!"},
-{"karen", "can you make sure they",
-"graduate before you leave?",
-"thx!"},
-{"noah", "can't it wait till tomorrow?", "karen?"},
-{"noah", "karen?"},
-{"noah", "oh, well, i'm here anyway..."},
-}
-		dialog[keyitemphase] = {
-
-}
-		dialog[outrophase] = {
-}
+			{"karen", "noah? do you copy? noah?"},
+			{"noah", "karen? i'm a bit underwater","at the moment..."},
+			{"karen", "you in the aquarium?","perfect!"},
+			{"karen", "the schools of fish passed","all their tests today!"},
+			{"karen", "can you make sure they","graduate before you leave?","thx!"},
+			{"noah", "can't it wait till tomorrow?", "karen?"},
+			{"noah", "karen?"},
+			{"noah", "oh, well, i'm here anyway..."}
+		}
 	elseif (state.lvl == 6) then
 		-- tundra 1
 		maprect = {0, 0, 8, 6, 4, 4}
@@ -424,17 +305,8 @@ function _init()
 		exit.y = 0
 		exit.sprite = index.cexit
 		sprites[7][4] = index.key
-		aa(animals, index.dpenguin, {3,1,4,1,5,1})
-		
-		dialog[introphase] = {
-{"noah", "stop monkeying around,\n",
-"the ice is slippery!",}
-}
-		dialog[keyitemphase] = {
-
-}
-		dialog[outrophase] = {
-}
+		aa(animals, index.dpenguin, {3,1,4,1,5,1})	
+		dialog[introphase] = {{"noah", "stop monkeying around,","the ice is slippery!"}}
 	elseif (state.lvl == 7) then
 		-- tundra 2
 		maprect = {8, 0, 9, 8, 4, 4}
@@ -452,32 +324,18 @@ function _init()
 		animals[3][5] = index.fwhale
 		
 		dialog[introphase] = {
-{"noah", "i need this day to be over."},
-{"noah", "where is that %$\x8f#\x92 monkey?"},
-{"karen", "noah? are you still at the", "zoo?"},
-{"noah", "yes, karen."},
-{"noah", "i haven't left yet.",
-"i'm just about to leave now-"},
-{"karen", "oh, not yet! please make",
-"sure the penguins are ready",
-"for the evening before you\n",
-"go. they are in the tundra."},
-{"noah", "i know where the penguins are,\n",
-"karen. i work here."},
-{"karen", "great! their bowties are in\n",
-"the tundra too!"},
-{"noah", "bowties? where are these\n",
-"penguins going, the opera?"},
-{"noah", "karen?"},
-}
-		dialog[keyitemphase] = {
-
-}
-		dialog[outrophase] = {
-{"noah", "penguins looking dapper, great.\n",
-"time to get out of here...wait,\n",
-"where is the door back?"},
-}
+			{"noah", "i need this day to be over."},
+			{"noah", "where is that %$\x8f#\x92 monkey?"},
+			{"karen", "noah? are you still at the", "zoo?"},
+			{"noah", "yes, karen."},
+			{"noah", "i haven't left yet.","i'm just about to leave now-"},
+			{"karen", "oh, not yet! please make","sure the penguins are ready","for the evening before you","go. they are in the tundra."},
+			{"noah", "i know where the penguins are,","karen. i work here."},
+			{"karen", "great! their bowties are in","the tundra too!"},
+			{"noah", "bowties? where are these","penguins going, the opera?"},
+			{"noah", "karen?"},
+		}
+		dialog[outrophase] = {{"noah", "penguins looking dapper, great.","time to get out of here...wait,","where is the door back?"}}
 	elseif (state.lvl == 8) then
 		-- tundra 2
 		maprect = {34, 14, 9, 13, 3.5, 1}
@@ -495,34 +353,13 @@ function _init()
 		aa(blocks, index.block, {1,6,6,7,1,8,7,8,8,8,5,9,9,9,9,10,1,11})
 		
 		dialog[introphase] = {
-{"noah", "oh no! how did the fire",
-"kitsune escape the mythical",
-"creature enclosure! how am i",
-"supposed to reach the door?"},
-{"noah", "karen? karen! are you there?"},
-{"karen", "i'm here! you almost done",
-"with those penguins?"},
-{"noah", "i don't have time for this,",
-"the fire kitsune is in the",
-"tundra and i can't get to the",
-"door!"},
-{"karen", "that's all? well, you just",
-"need the pearl, the soul of",
-"the kitsune, and to find a",
-"way to freeze it in order",
-"to-"},
-{"noah", "oh, that's it? find the soul",
-"of a kitsune and freeze it?",
-"thanks karen!"},
-}
-		dialog[keyitemphase] = {
-
-}
-		dialog[outrophase] = {
-{"noah", "phew! someone else has got to\n",
-"thaw that thing out tomorrow.\n",
-"for now, i'm going home!"},
-}
+			{"noah", "oh no! how did the fire","kitsune escape the mythical","creature enclosure! how am i","supposed to reach the door?"},
+			{"karen", "i'm here! you almost done","with those penguins?"},
+			{"noah", "i don't have time for this,","the fire kitsune is in the","tundra and i can't get to the","door!"},
+			{"karen", "that's all? well, you just","need the pearl, the soul of","the kitsune, and to find a","way to freeze it in order","to-"},
+			{"noah", "oh, that's it? find the soul","of a kitsune and freeze it?","thanks karen!"}
+		}
+		dialog[outrophase] = {{"noah", "phew! someone else has got to","thaw that thing out tomorrow.","for now, i'm going home!"}}
 	elseif (state.lvl == 9) then
 		-- end menu
 		maprect = {96, 0, 16, 16, 0, 0}
@@ -532,29 +369,20 @@ function _init()
 		aas(blocks, {243,5,10,242,5,12,241,5,14}) --keys
 
 		dialog[introphase] = {
-{"noah", "finally, home! i get to enjoy\n",
-"the rest of my birthday in\n",
-"peace and quiet!"},
-{"karen and coworkers", "surprise!\n",
-"happy birthday!"},
-{"noah", "karen? what are you and all\n",
-"the other zookeepers doing\n",
-"here? i thought you left",
-"early-"},
-{"karen and coworkers", "we were getting ready for your\n",
-"party silly. we had to stall!"},
-{"noah", "mackers stealing my keys?"},
-{"coworkers", "that was us."},
-{"noah", "the fish and the penguins?"},
-{"coworkers", "yup. us too!"},
-{"noah", "the fire kitsune?"},
-{"coworkers", "you sound mad..."},
-{"noah", "get out."},
-{"", "           the end"},
-}
-
+			{"noah", "finally, home! i get to enjoy","the rest of my birthday in","peace and quiet!"},
+			{"karen and coworkers", "surprise!","happy birthday!"},
+			{"noah", "karen? what are you and all","the other zookeepers doing","here? i thought you left","early-"},
+			{"karen and coworkers", "we were getting ready for your","party silly. we had to stall!"},
+			{"noah", "mackers stealing my keys?"},
+			{"coworkers", "that was us."},
+			{"noah", "the fish and the penguins?"},
+			{"coworkers", "yup. us too!"},
+			{"noah", "the fire kitsune?"},
+			{"coworkers", "you sound mad..."},
+			{"noah", "get out."},
+			{"", "           the end"},
+		}
 	end
-
 end
 
 -- copy from list of points into the specified array
@@ -611,40 +439,26 @@ function _update60()
 			end
 		end
 
---		if (state.phase == introphase and dialog[introphase] == nil) state.phase = gamephase
---		if (state.phase == outrophase and dialog[outrophase] == nil) state.phase = gamephase
---		if (state.phase == keyitemphase and dialog[keyitemphase] == nil) state.phase = gamephase
-
-	
+		if (state.phase == keyitemphase and dialog[keyitemphase] == nil) state.phase = gamephase
 	end
-
 
 	if (state.phase != gamephase) return
-
-	if (state.menu == endmenu) then
-		-- z/x to reset?
-		return
-	end
+	if (state.menu == endmenu) return
 
 	-- delay slightly after player death
 	if (player.delay > 0) then
 		player.delay -= 1
 		return
 	end
-	if (player.delayfunc != nil) then
-		player.delayfunc()
-	end
+	if (player.delayfunc != nil) player.delayfunc()
 
+	-- resolve items at the start of the player's next turn
 	pickup(player.x, player.y)
-	
 	updatewornitems()
 
-	-- check for death
-	if (checkdeath()) then
-		return
-	end
+	if (checkdeath()) return
 
-	-- buffer last key press unless we were forced to slide on ice
+	-- buffer last key press unless we are sliding/falling
 	local b = btnp()
 	if (b > 0 and player.sdx == 0 and player.sdx == 0) player.buff = b
 
@@ -654,7 +468,6 @@ function _update60()
 		player.sdy = -1
 		player.isbubbleslide = true
 	end
-
 
 	-- skip player movement while animals are moving
 	if (player.animaldelay > 0 and player.isbubbleslide == false) then
@@ -761,7 +574,6 @@ function _draw()
 	if (state.menu==startmenu) draw_startmenu()
 	if (state.menu==game) draw_level()
 	if (state.menu==endmenu) draw_endmenu()
-
 end
 
 function draw_startmenu()
@@ -770,11 +582,12 @@ function draw_startmenu()
 	-- draw map
 	map(maprect[1], maprect[2], maprect[5]*gridsize, maprect[6]*gridsize, maprect[3], maprect[4])
 
-	-- draw text
-	rectfill(16-2,13-1,62,20, 11)
+	-- draw title header
+	rectfill(14, 12, 62, 20, 11)
 	print ("i t ' s	  a",  16, 14, 1)
 
-	rectfill(30-2,76-2,94,82, 1)
+	-- blink start text
+	rectfill(28, 74, 94, 82, 1)
 	if (tick % 120 >= 60) then
 		print("press z to start", 30, 76, 13)
 	end
@@ -815,7 +628,6 @@ function draw_endmenu()
 		end
 	end
 
-
 	if (state.phase == introphase) return
 
 	-- draw keys for our names
@@ -831,14 +643,13 @@ function draw_endmenu()
 
 	-- draw logo text
 	local len = #"weird sisters"
-	local logox = (128 - len*4 - 1)/2
+	local logox = (128 - len*textwidth - 1)/2
 	local logoy = 24
-	rectfill(logox - 5, logoy - 5, logox+len*4 + 5, logoy + 5*4, 5)
+	rectfill(logox - 5, logoy - 5, logox + len*textwidth + 5, logoy + 22, 5)
 	print ("weird sisters\n\n interactive", logox, logoy, 7)
 
-
-	local y = 8*9+3
-	x = 8*6-4
+	x = 44
+	local y = 75
 	print ("ava", x, y, 7)
 	print ("rachel", x, y+16, 7)
 	print ("jessica", x, y+32, 7)
@@ -848,29 +659,13 @@ end
 function draw_level()
 	cls()
 
-	-- draw extra blocks if over ice
-
-
-	-- draw map
+	-- draw map with border
 	local ox = maprect[5]*gridsize
 	local oy = maprect[6]*gridsize
-	local wp = maprect[3]*gridsize
-	local hp = maprect[4]*gridsize
-	local w = 2
-	if (player.isvertical) hp += gridsize
-	rectfill(ox-w, oy-w, ox+wp+w-1, oy+hp+w-1, 5)
-
-	if (player.isvertical) then
+	local width = 2
+	rectfill(ox-width, oy-width, ox+maprect[3]*gridsize+width-1, oy+maprect[4]*gridsize+width-1, 5)
+	map(maprect[1], maprect[2], ox, oy, maprect[3], maprect[4])
 	
-
-		map(maprect[1], maprect[2], ox, oy, maprect[3], maprect[4])
-	else
-		map(maprect[1], maprect[2], ox, oy, maprect[3], maprect[4])
-	end
-
-
-
-
 	-- draw ice sheen
 	drawice()
 
@@ -895,17 +690,19 @@ function draw_level()
 	-- draw block pushed by player one square ahead of the player
 	if (player.sblock) spr(index.block, pox+gridsize*player.sdx, poy+gridsize*player.sdy)
 
-	-- ui
+	-- debug
 	if (blkmsg != nil and blkmsg != 0) then
 		print(blkmsg)
 		blkmsg = nil
 	end
-		--print("steps: " .. steps .. "	 [animal: " .. asteps .. "]")
-		local s = "steps: " .. steps
-		if (player.oxygen > -1) s = s .. "  oxygen: " .. player.oxygen
-		if (player.goalneededcount > 0) s = s .. "  " .. player.goaltext .. ": " .. player.goalcount .. "/" .. player.goalneededcount
-		print(s)
 
+	-- ui
+	local s = "steps: " .. steps
+	if (player.oxygen > -1) s = s .. "  oxygen: " .. player.oxygen
+	if (player.goalneededcount > 0) s = s .. "  " .. player.goaltext .. ": " .. player.goalcount .. "/" .. player.goalneededcount
+	print(s)
+
+	-- dialog
 	if (state.phase != gamephase and dialog[state.phase]) then
 		if (state.phase == introphase and hasplayedintro == true) return
 		if (state.phase == keyitemphase and hasplayedkey == true) return
@@ -922,19 +719,21 @@ end
 
 function nextlevel()
 	state.lvl += 1
+	
 	hasplayedintro = false
 	hasplayedkey = false
 	hasplayedoutro = false
+	
 	if (state.lvl == 9) state.menu = endmenu
 	_init()
 end
 
 function drawbossbox(sa)
-	drawdialogbox(sa, dialogbox.bcornerarrow, dialogbox.bcorner, dialogbox.bside, dialogbox.btop, true)
+	drawdialogbox(sa, 244, 245, 246, 247, true)
 end
 
 function drawbox(sa)
-	drawdialogbox(sa, dialogbox.corner, dialogbox.corner, dialogbox.side, dialogbox.top, false)
+	drawdialogbox(sa, 248, 248, 249, 250, false)
 end
 
 -- sound turned off until someone who actually knows sounds can redo them
@@ -958,7 +757,7 @@ function drawdialogbox(text, sc, c, s, t, isboss)
 	local namex = xmin
 	if (text[1] != "") then 
 		if (text[1] != "noah") then
-			local offset = 128 - (#text[1])*4 - 7
+			local offset = 128 - (#text[1])*textwidth - 7
 
 			local bgcolor = 7
 			if (isboss) bgcolor = 10
@@ -966,13 +765,13 @@ function drawdialogbox(text, sc, c, s, t, isboss)
 			rectfill(offset-2, ymin*8-7, 128-7, ymax*8-9, bgcolor)
 			print (text[1], offset, ymin*8-6, 0)
 		else
-			rectfill(xmin*8+7, ymin*8-7, xmin*8 + (#text[1])*4 + 9, ymax*8-1, 7)
+			rectfill(xmin*8+7, ymin*8-7, xmin*8 + (#text[1])*textwidth + 9, ymax*8-1, 7)
 			print (text[1], xmin*8+9, ymin*8-6, 2)
 		end
 	end
 
 
-	for i = xmin, xmax do
+	for i = 0, 15 do
 		for j = 0, 15 do
 			local x = i*gridsize
 			local y = j*gridsize
@@ -1004,8 +803,8 @@ function drawdialogbox(text, sc, c, s, t, isboss)
 	printfancytext(false, false, text, xmin, ymin)
 
 	-- radio
-	local box = dialogbox.radioon
-	if (tick % 50 < 25) box = dialogbox.radiooff
+	local box = 215
+	if (tick % 50 < 25) box = 214
 	if (isboss) spr(box, 0, (ymin - 1)*8)
 
 end
@@ -1037,10 +836,10 @@ function animatewater()
 	if ((tick % 80) == 1) then 
 		for x=1, maprect[3] do
 			for y=1, maprect[4] do
-				if (mgetspr(x, y) == anim.water1) then
-					msetspr(anim.water2, x, y)
-				elseif(mgetspr(x, y) == anim.water2) then
-					msetspr(anim.water1, x, y)
+				if (mgetspr(x, y) == 1) then
+					msetspr(2, x, y)
+				elseif(mgetspr(x, y) == 2) then
+					msetspr(1, x, y)
 				end
 			end
 		end
@@ -1069,24 +868,16 @@ end
 function drawice()
 	local px = player.x
 	local py = player.y
-
 	local w = maprect[4]
-	--local w = dimensions
 
 	for i=1, dimensions do
 		for j=1, dimensions do
 			if (mgetspr(i,j) == index.ice) then
-				--if (i == (px+1 -j)%w+1) sprgrid(index.ice+4, i, j)
-				--if (i == (px - j )%w+1) sprgrid(index.ice+3, i, j)
-				--if (i == (px-1 -j)%w+1) sprgrid(index.ice+2, i, j)
-				--if (i == (px-2 -j)%w+1) sprgrid(index.ice+1, i, j)
-
 				if (j == (py+1-i)%w+1) sprgrid(index.ice+4, i, j)
 				if (j == (py  -i)%w+1) sprgrid(index.ice+3, i, j)
 				if (j == (py-1-i)%w+1) sprgrid(index.ice+2, i, j)
 				if (j == (py-2-i)%w+1) sprgrid(index.ice+1, i, j)
 			end
-
 		end
 	end
 end
@@ -1094,12 +885,11 @@ end
 function drawoutline(s, x, y)
 	for i=0,7 do
 		for j=0,7 do
-
 			local px = (s%16)*8+i
 			local py = flr(s/16)*8 + j
 
+			-- this doesn't check if we've already drawn at a location since it's less lines of code
 			if (sget(px,py) > 0) then
-				--rect(x+i-1, y+j-1, x+i+1, y+j+1, 5)
 				rect(x+i-1, y+j, x+i+1, y+j, 5)
 				rect(x+i, y+j-1, x+i, y+j+1, 5)
 			end
@@ -1107,30 +897,41 @@ function drawoutline(s, x, y)
 	end
 end
 
+function emptyarray(dim, defaultval)
+	array = {}
+	for i = 1, dim do
+		array[i] = {}
+		for j = 1, dim do
+			array[i][j] = defaultval
+		end
+	end
+	return array
+end
+
 function sprgrid(s, x, y)
 	if (s) spr(s, (x + maprect[5] - 1)*gridsize, (y + maprect[6] - 1)*gridsize)
 end
 
 function mgetspr(x, y)
-	if (x < 1 or x > maprect[3] or y < 1 or y > maprect[4]) return nil
+	if (isoutsidemap(x, y)) return
 
 	return mget(x + maprect[1] - 1, y + maprect[2] - 1)
 end
 
 function msetspr(s, x, y)
-	if (x < 1 or x > maprect[3] or y < 1 or y > maprect[4]) return
-	mset(x+maprect[1]-1,y+maprect[2]-1,s)
+	if (isoutsidemap(x, y)) return
+
+	mset(x+maprect[1]-1, y+maprect[2]-1, s)
+end
+
+function isoutsidemap(x, y)
+	if (x < 1 or x > maprect[3] or y < 1 or y > maprect[4]) return true
+	return false
 end
 
 function movepatrolinganimals()
 	-- track which animals have already moved
-	moved = {}
-	for i=1, dimensions do
-		moved[i] = {}
-		for j=1, dimensions do
-			moved[i][j] = false
-		end
-	end
+	moved = emptyarray(dimensions, false)
 
 	-- move animals in place from top of grid to bottom of grid
 	for i=1, dimensions do
@@ -1138,7 +939,7 @@ function movepatrolinganimals()
 			if (moved[i][j] == false) then 
 				local a = animals[i][j]
 
-				-- TODO: This is getting out of hand
+				-- todo: this is getting out of hand
 				if (a == index.dpenguin or a == index.upenguin) then
 					moveanimal(a, index.upenguin, index.dpenguin, i, j, false, 8)
 				elseif (a == index.dbowpenguin or a == index.ubowpenguin) then
@@ -1150,7 +951,7 @@ function movepatrolinganimals()
 				end
 
 				if (a==index.fturtle or a==index.flturtle) then
-					movebiganimal(a, index.flturtle, index.fturtle, index.blturtle, index.bturtle, i, j, 12)
+					movebiganimal(a, moved, index.flturtle, index.fturtle, index.blturtle, index.bturtle, i, j, 12)
 				end
 			end
 		end
@@ -1169,34 +970,22 @@ end
 
 function moverandomanimals()
 	-- track which animals have already moved
-	moved = {}
-	for i=1, dimensions do
-		moved[i] = {}
-		for j=1, dimensions do
-			moved[i][j] = false
-		end
-	end
+	moved = emptyarray(dimensions, false)
 
 	-- move animals in place from top of grid to bottom of grid
 	for i=1, dimensions do
 		for j=1, dimensions do
+			animals[i][j] = swap(animals[i][j], index.bbird1, index.bbird2)
+			animals[i][j] = swap(animals[i][j], index.pbird1, index.pbird2)
 			local a = animals[i][j]
 
-			if (a and moved[i][j] == false) then
-				
-				animals[i][j] = swap(animals[i][j], index.bbird1, index.bbird2)
-				animals[i][j] = swap(animals[i][j], index.pbird1, index.pbird2)
-
-				a = animals[i][j]
-
-				if (animalmovesrandomly(a)) then
-					local dx, dy = moverandom(i, j)
-					local ni = i + dx
-					local nj = j + dy
-					animals[i][j] = nil
-					animals[ni][nj] = a
-					moved[ni][nj] = true
-				end
+			if (a and moved[i][j] == false and animalmovesrandomly(a)) then
+				local dx, dy = randomdirection(i, j)
+				local ni = i + dx
+				local nj = j + dy
+				animals[i][j] = nil
+				animals[ni][nj] = a
+				moved[ni][nj] = true
 			end
 		end
 	end
@@ -1208,7 +997,7 @@ function animalmovesrandomly(a)
 end
 
 -- returns a dx, dy random delta to move in
-function moverandom(x, y)
+function randomdirection(x, y)
 	local dx = 0
 	local dy = 0
 
@@ -1223,7 +1012,7 @@ function moverandom(x, y)
 	return 0, 0
 end
 
-function movebiganimal(a, lf, rf, lb, rb, i, j)
+function movebiganimal(a, moved, lf, rf, lb, rb, i, j)
 	local turned = nil
 	local tbutt = nil
 	local butt = nil
@@ -1302,7 +1091,7 @@ end
 
 -- returns (sprite, sfx) if picked up
 function canpickup(x, y)
-	if (x <= 0 or y <= 0) return nil
+	if (isoutsidemap(x, y)) return nil
 
 	local s = sprites[x][y]
 
@@ -1320,7 +1109,7 @@ function canpickup(x, y)
 end
 
 function pickup(x, y)
-	if (x <= 0 or y <= 0) return nil
+	if (isoutsidemap(x, y)) return nil
 
 	local s, fx = canpickup(x,y)
 
@@ -1358,8 +1147,7 @@ function acanmove(ax, ay, dx, dy)
 	local x = ax + dx
 	local y = ay + dy
 
-	if (x <= 0 or y <= 0) return false
-	if (x > maprect[3] or y > maprect[4]) return false
+	if (isoutsidemap(x, y)) return false
 
 	local s = mgetspr(x, y)
 	local flags = fget(s)
@@ -1380,7 +1168,7 @@ end
 
 function updatewornitems()
 	-- try to take item from the player first, then from environment
-	adjacent(function (x, y) 
+	iterateadjacent(function(x, y) 
 		if (wearitem(x, y, player.helditem)) then
 			player.helditem = nil
 			player.goalcount += 1
@@ -1403,24 +1191,25 @@ function updatewornitems()
 	end
 end
 
-function adjacent(f, x, y)
-	if (x+1 <= maprect[3]) then
+function iterateadjacent(f, x, y)
+	if (x <= maprect[3]) then
 		f(x+1, y)
 	end
-	if (x-1 > 0) then
+	if (x > 0) then
 		f(x-1, y)
 	end
-	if (y+1 <= maprect[4]) then
+	if (y <= maprect[4]) then
 		f(x, y+1)
 	end
-	if (y-1 > 0) then
+	if (y > 0) then
 		f(x, y-1)
 	end
 end
 
 -- returns returns true if the animal wears the item
 function canwearitem(x, y, item)
-	if (x <= 0 or y <= 0) return false
+	if (isoutsidemap(x, y)) return false
+
 	if (item == nil) return false
 	local s = animals[x][y]
 	
@@ -1436,7 +1225,8 @@ function canwearitem(x, y, item)
 end
 
 function wearitem(x, y, item)
-	if (x <= 0 or y <= 0) return false
+	if (isoutsidemap(x, y)) return false
+
 	if (item == nil) return false
 	local s = animals[x][y]
 	
@@ -1464,9 +1254,10 @@ function checkanimalattack()
 		for j=1, maprect[4] do
 			local a = animals[i][j]
 			if (band(fget(a), fdeath) > 0) then
-				-- check 4 adjacent squares only (not diagonals)
-				if ((player.x==i-1 or player.x==i+1) and player.y==j) killed = true
-				if ((player.y==j-1 or player.y==j+1) and player.x==i) killed = true
+				-- check 4 adjacent squares to animal for the player
+				iterateadjacent(function(x, y) 
+					if (x == player.x and y == player.y) killed = true 
+				end, i, j)
 			end
 
 			-- jelly death
@@ -1487,14 +1278,16 @@ function checkanimalattack()
 end
 
 function isjelly(x, y)
-	if (x <= 0 or y <= 0) return false
+	if (isoutsidemap(x, y)) return false
+
 	local a = animals[x][y]
 	if (a==index.ujelly1 or a==index.ujelly2 or a==index.jelly1 or a==index.jelly2) return true
 	return false
 end
 
 function isturtle(x, y)
-	if (x <= 0 or y <= 0) return false
+	if (isoutsidemap(x, y)) return false
+
 	local a = animals[x][y]
 	if (a==index.fturtle or a==index.flturtle or a==index.bturtle or a==index.blturtle) return true
 	return false
@@ -1507,8 +1300,6 @@ function checkanimaleaten()
 	for i=1, maprect[3] do
 		for j=1, maprect[4] do
 			local a = animals[i][j]
-
-			
 			
 			if (a == index.fturtle and isjelly(i+1, j)) then
 				animals[i+1][j] = nil
@@ -1517,17 +1308,6 @@ function checkanimaleaten()
 				animals[i-1][j] = nil
 				eatsfx = 15
 			end
-
-			-- old logic for turtles that eat jellies in all square adjacent to heads
-			--elseif ((a == index.flturtle or a == index.fturtle)) then
-			--	if (isjelly(i, j+1)) then
-			--		animals[i][j+1] = nil
-			--		eatsfx = 15
-			--	elseif(isjelly(i, j-1)) then
-			--		animals[i][j-1] = nil
-			--		eatsfx = 15
-			--	end
-			--end
 		end
 	end
 
@@ -1542,40 +1322,32 @@ end
 -- the cirrrrclleeeeee of lifeeeeeee
 function breedrabbits()
 	-- track which animals have already bred
-	local count = 0
-	bred = {}
-	for i=1, dimensions do
-		bred[i] = {}
-		for j=1, dimensions do
-			bred[i][j] = false
+	local bred = emptyarray(dimensions, false)
 
+	local count = 0
+	for i=1, dimensions do
+		for j=1, dimensions do
 			if (animals[i][j]) count += 1
 		end
 	end
 
 	-- todo: make this behave more like the game of life (too many nearby rabbits will prohibit more rabbits, [maybe not kill any though])
-
 	if (count > 50) return
 
 	for i=1, dimensions do
 		for j=1, dimensions do
 			local a = animals[i][j]
 			if (a==index.rabbit and bred[i][j] == false) then
-
-				-- todo: make an adjacent coordinates iterator
-				if (trytobreed(a, bred, i, j, -1, 0) or trytobreed(a, bred, i, j, 1, 0) or trytobreed(a, bred, i, j, 0, -1) or trytobreed(a, bred, i, j, 0, 1)) then
-					
-				end
+				iterateadjacent(function(x, y) trytobreed(a, bred, i, j, x, y) end, i, j)
 			end
 		end
 	end
 end
 
-function trytobreed(animal, bred, x, y, dx, dy)
-	local nx = x + dx
-	local ny = y + dy
+function trytobreed(animal, bred, x, y, nx, ny)
+	if (isoutsidemap(x, y) or isoutsidemap(nx, ny)) return
 
-	if (nx > 0 and ny > 0 and x > 0 and y > 0 and nx < dimensions and bred[nx][ny] == false and animal == animals[nx][ny]) then
+	if (bred[nx][ny] == false and animal == animals[nx][ny]) then
 		if (placechild(bred, nx, ny) or placechild(bred, x, y)) then
 			bred[x][y] = true
 			bred[nx][ny] = true
@@ -1649,13 +1421,14 @@ function moveisslide(x, y, dx, dy)
 end
 
 function isblock(x, y)
-	if (x <= 0 or y <= 0) return false
+	if (isoutsidemap(x, y)) return false
+
 	if (blocks[x][y]) return true
 	return false
 end
 
 function canpushblockto(x, y, flags)
-	if (x <= 0 or y <= 0) return false
+	if (isoutsidemap(x, y)) return false
 
 	if (animals[x][y]) return false
 	if (blocks[x][y]) return false
@@ -1667,7 +1440,7 @@ function canpushblockto(x, y, flags)
 end
 
 function vcanpushblockto(x, y, flags)
-	if (x <= 0 or y <= 0 or x > maprect[3] or y > maprect[4]) return false
+	if (isoutsidemap(x, y)) return false
 
 	if (animals[x][y]) return false
 	if (blocks[x][y]) return false
@@ -1677,7 +1450,7 @@ function vcanpushblockto(x, y, flags)
 end
 
 function canwalkto(x, y, flags)
-	if (x <= 0 or y <= 0) return false
+	if (isoutsidemap(x, y)) return false
 
 	if (animals[x][y]) return false
 	if (blocks[x][y]) return true
@@ -1712,7 +1485,7 @@ function moveplayer(dx, dy)
 		return true
 	end
 
-	if (x <= 0 or y <= 0) return false
+	if (isoutsidemap(x, y)) return false
 
 	-- try to continue sliding a block
 	if (player.sblock) then
@@ -1840,7 +1613,7 @@ function vmoveplayer(dx, dy)
 	end
 
 	-- check if out of bounds
-	if (x <= 0 or y <= 0 or x > maprect[3] or y > maprect[4]) return false
+	if (isoutsidemap(x, y)) return false
 
 	-- stop falling if we can stand here, otherwise keep falling
 	if (player.sdy > 0) then
