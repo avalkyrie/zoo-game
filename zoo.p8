@@ -12,7 +12,7 @@ outrophase = "outro"
 keyitemphase = "keyitem"
 gamephase = "game"
 
-state={menu=game,lvl=4,phase=introphase}
+state={menu=startmenu,lvl=0,phase=introphase}
 
 maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
 
@@ -541,14 +541,14 @@ function _update60()
 	end
 
 	-- update any tiles
-	for i=1,maprect[3] do
-		for j=1,maprect[4] do
+	iteratemap(
+		function(i,j)
 			if (blocks[i][j] and band(fget(mgetspr(i,j)), fwater) > 0) then
 				blocks[i][j] = nil
 				msetspr(index.wblock,i,j)
 			end
 		end
-	end
+	)
 
 	-- did the player win?
 	if (player.x == exit.x and player.y == exit.y) then
@@ -594,13 +594,13 @@ function draw_startmenu()
 	end
 
 	-- draw sprites
-	for i=1, dimensions do
-		for j=1, dimensions do
+	iteratemap(
+		function(i,j)
 			sprgrid(sprites[i][j], i, j)
 			sprgrid(animals[i][j], i, j)
 			sprgrid(blocks[i][j], i, j)
 		end
-	end
+	)
 end
 
 function draw_endmenu()
@@ -622,21 +622,21 @@ function draw_endmenu()
 	if (state.phase == introphase and dialogindex < 2) return
 
 	-- draw sprites
-	for i=1, dimensions do
-		for j=1, dimensions do
+	iteratemap(
+		function(i,j)
 			sprgrid(sprites[i][j], i, j)
 			sprgrid(animals[i][j], i, j)
 		end
-	end
+	)
 
 	if (state.phase == introphase) return
 
 	-- draw keys for our names
-	for i=1, dimensions do
-		for j=1, dimensions do
+	iteratemap(
+		function(i,j)
 			sprgrid(blocks[i][j], i, j)
 		end
-	end
+	)
 
 	local x = 20
 
@@ -674,13 +674,13 @@ function draw_level()
 	sprgrid(exit.sprite, exit.x, exit.y)
 
 	-- draw sprites
-	for i=1, dimensions do
-		for j=1, dimensions do
+	iteratemap(
+		function(i,j)
 			sprgrid(sprites[i][j], i, j)
 			sprgrid(animals[i][j], i, j)
 			sprgrid(blocks[i][j], i, j)
 		end
-	end
+	)
 
 	-- draw player
 	local pox = (player.x + maprect[5] - 1)*gridsize + player.sdx*player.sframe
@@ -857,26 +857,26 @@ end
 
 function animatewater()
 	if ((tick % 80) == 1) then 
-		for x=1, maprect[3] do
-			for y=1, maprect[4] do
+		iteratemap(
+			function(x,y)
 				if (mgetspr(x, y) == 1) then
 					msetspr(2, x, y)
 				elseif(mgetspr(x, y) == 2) then
 					msetspr(1, x, y)
 				end
 			end
-		end
+		)
 	end
 end
 
 function animatestaticanimals()
 	if ((tick % 80) == 1) then
-		for i=1, maprect[3] do
-			for j=1, maprect[4] do
+		iteratemap(
+			function(i, j)
 				animals[i][j] = swap(animals[i][j], index.jelly1, index.jelly2)
 				animals[i][j] = swap(animals[i][j], index.ujelly1, index.ujelly2)
 			end
-		end
+		)
 	end
 end
 
@@ -893,8 +893,8 @@ function drawice()
 	local py = player.y
 	local w = maprect[4]
 
-	for i=1, dimensions do
-		for j=1, dimensions do
+	iteratemap(
+		function(i,j)
 			if (band(fget(mgetspr(i,j)), fice) > 0) then
 				if (j == (py+1-i)%w+1) sprgrid(index.ice+4, i, j)
 				if (j == (py  -i)%w+1) sprgrid(index.ice+3, i, j)
@@ -902,7 +902,7 @@ function drawice()
 				if (j == (py-2-i)%w+1) sprgrid(index.ice+1, i, j)
 			end
 		end
-	end
+	)
 end
 
 function drawoutline(s, x, y)
@@ -957,8 +957,8 @@ function movepatrolinganimals()
 	moved = emptyarray(dimensions, false)
 
 	-- move animals in place from top of grid to bottom of grid
-	for i=1, dimensions do
-		for j=1, dimensions do
+	iteratemap(
+		function(i,j)
 			if (moved[i][j] == false) then 
 				local a = animals[i][j]
 
@@ -978,7 +978,7 @@ function movepatrolinganimals()
 				end
 			end
 		end
-	end
+	)
 
 	asteps += 1
 end
@@ -996,8 +996,8 @@ function moverandomanimals()
 	moved = emptyarray(dimensions, false)
 
 	-- move animals in place from top of grid to bottom of grid
-	for i=1, dimensions do
-		for j=1, dimensions do
+	iteratemap(
+		function(i,j)
 			animals[i][j] = swap(animals[i][j], index.bbird1, index.bbird2)
 			animals[i][j] = swap(animals[i][j], index.pbird1, index.pbird2)
 			local a = animals[i][j]
@@ -1011,7 +1011,7 @@ function moverandomanimals()
 				moved[ni][nj] = true
 			end
 		end
-	end
+	)
 end
 
 function animalmovesrandomly(a)
@@ -1204,14 +1204,14 @@ function updatewornitems()
 		end
 	end, player.x, player.y)
 	
-	for i=1, maprect[3] do
-		for j=1, maprect[4] do
+	iteratemap(
+		function(i,j)
 			if (wearitem(i, j, sprites[i][j])) then
 				sprites[i][j] = nil
 				player.goalcount += 1
 			end
 		end
-	end
+	)
 end
 
 function iterateadjacent(f, x, y)
@@ -1226,6 +1226,14 @@ function iterateadjacent(f, x, y)
 	end
 	if (y > 0) then
 		f(x, y-1)
+	end
+end
+
+function iteratemap(f)
+	for i=1, maprect[3] do
+		for j=1, maprect[4] do
+			f(i, j)
+		end
 	end
 end
 
@@ -1273,8 +1281,8 @@ function checkanimalattack()
 	local killedbyjelly = false
 	local killed = false
 
-	for i=1, maprect[3] do
-		for j=1, maprect[4] do
+	iteratemap(
+		function(i,j)
 			local a = animals[i][j]
 			if (band(fget(a), fdeath) > 0) then
 				-- check 4 adjacent squares to animal for the player
@@ -1293,7 +1301,7 @@ function checkanimalattack()
 				end
 			end
 		end
-	end
+	)
 
 	if (killedbyjelly) return true, true
 	if (killed) return true, false
@@ -1320,8 +1328,8 @@ function checkanimaleaten()
 	local eatsfx = 0
 
 	-- doesn't handle cases where there are chains of predators
-	for i=1, maprect[3] do
-		for j=1, maprect[4] do
+	iteratemap(
+		function(i,j)
 			local a = animals[i][j]
 			
 			if (a == index.fturtle and isjelly(i+1, j)) then
@@ -1332,7 +1340,7 @@ function checkanimaleaten()
 				eatsfx = 15
 			end
 		end
-	end
+	)
 
 	if (eatsfx > 0) then
 		playsound(eatsfx)
@@ -1348,23 +1356,23 @@ function breedrabbits()
 	local bred = emptyarray(dimensions, false)
 
 	local count = 0
-	for i=1, dimensions do
-		for j=1, dimensions do
+	iteratemap(
+		function(i,j)
 			if (animals[i][j]) count += 1
 		end
-	end
+	)
 
 	-- todo: make this behave more like the game of life (too many nearby rabbits will prohibit more rabbits, [maybe not kill any though])
 	if (count > 50) return
 
-	for i=1, dimensions do
-		for j=1, dimensions do
+	iteratemap(
+		function(i,j)
 			local a = animals[i][j]
 			if (a==index.rabbit and bred[i][j] == false) then
 				iterateadjacent(function(x, y) trytobreed(a, bred, i, j, x, y) end, i, j)
 			end
 		end
-	end
+	)
 end
 
 function trytobreed(animal, bred, x, y, nx, ny)
