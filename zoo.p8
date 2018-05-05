@@ -159,7 +159,7 @@ function _init()
 	player.oxygen = -1
 	player.isbubbleslide = false
  	player.helditem = nil
-	player.goaltext = nil
+	player.goalsprite = nil
 	player.goalneededcount = 0
 	player.goalcount = 0
 	player.delay = 0
@@ -272,7 +272,7 @@ function _init()
 		player.y = 1
 		player.oxygen = 6
 		player.sprite = index.playerscuba
-		player.goaltext = "grads"
+		player.goalsprite = index.grad
 		player.goalneededcount = 4
 		exit.x = 5	  
 		exit.y = 0
@@ -312,7 +312,7 @@ function _init()
 		maprect = {8, 0, 9, 8, 4, 4}
 		player.x = 1
 		player.y = 3
-		player.goaltext = "penguins dressed"
+		player.goalsprite = index.bow
 		player.goalneededcount = 3
 		exit.x = 6
 		exit.y = 9
@@ -452,10 +452,6 @@ function _update60()
 	end
 	if (player.delayfunc != nil) player.delayfunc()
 
-	-- resolve items at the start of the player's next turn
-	pickup(player.x, player.y)
-	updatewornitems()
-
 	if (checkdeath()) return
 
 	-- buffer last key press unless we are sliding/falling
@@ -566,6 +562,10 @@ function _update60()
 	-- animate map tiles
 	animatewater()
 	animatestaticanimals()
+
+	-- resolve items
+	pickup(player.x, player.y)
+	updatewornitems()
 end
 
 function _draw()
@@ -697,6 +697,14 @@ function draw_level()
 	-- draw block pushed by player one square ahead of the player
 	if (player.sblock) spr(index.block, pox+gridsize*player.sdx, poy+gridsize*player.sdy)
 
+	-- oxygen meter
+	if (player.oxygen > -1) then
+		for i=0, player.oxygen-1 do
+			spr(230+i, 8*(15+i-6),0)
+			--sprgrid(230+i, maprect[3]+maprect[5]-6+i, maprect[4]+1)
+		end
+	end
+
 	-- debug
 	if (blkmsg != nil and blkmsg != 0) then
 		print(blkmsg)
@@ -704,10 +712,17 @@ function draw_level()
 	end
 
 	-- ui
-	local s = "steps: " .. steps
-	if (player.oxygen > -1) s = s .. "  oxygen: " .. player.oxygen
-	if (player.goalneededcount > 0) s = s .. "  " .. player.goaltext .. ": " .. player.goalcount .. "/" .. player.goalneededcount
-	print(s)
+	local message = "steps " .. steps
+
+	if (player.goalsprite) then
+		print(message, 0, 1)
+
+		local goalx = (#message+2) * textwidth
+		spr(player.goalsprite, goalx, 0)
+		print(player.goalcount .. "/" .. player.goalneededcount, goalx+gridsize+textwidth, 1)
+	else 
+		print(message)
+	end
 
 	-- dialog
 	if (state.phase != gamephase and dialog[state.phase]) then
@@ -1765,12 +1780,12 @@ ffffff8800000000000000000a90a988888899889a9989a0000000000000000011c11c1100c11c00
 fff9998ff000000000000000a9999888888888888998889a00000000000000001c0919c100091900001111001cc11cc11cc11cc1000000000044400000444400
 0ffffffff8800000000000009988888888888888888888890000000000000000c011110c001111000009090001cccc1001cccc10000000000440440004004400
 0000000000000000000f888000000000000000000000000000000000055a55000555a55000000000000000000000000000000000007777000077770000077700
-0000f0000000fff00ffff80000000000000a000000a00a00000000000055a00d00555a000555a50000000000000000000000000007ccc57007ccc570007ccc70
-0f8f0000000ff99fffff9000000000a000a0000000aa00000000aa000dddd0dd0c99990000555a000000000000000000000007007c5555c77c5555c707c55557
-ffffff00fffffffffffff90000000a000a9a0a000a000000555555a5dd0dddd0c96669c0cc040cc0000000000000000000007770756665c7756665c707566657
+0000f0000000fff00ffff80000000000000a000000a00a000000aa000055a00d00555a000555a50000000000000000000000000007ccc57007ccc570007ccc70
+0f8f0000000ff99fffff9000000000a000a0000000aa0000555555a50dddd0dd0c99990000555a000000000000000000000007007c5555c77c5555c707c55557
+ffffff00fffffffffffff90000000a000a9a0a000a000000005555a0dd0dddd0c96669c0cc040cc0000000000000000000007770756665c7756665c707566657
 00fffffffff9ffff9999ff800a0000a9a99900a009a0a000005555a0ddddddd0cc999c00cc444c00000000009000000990077779765556c7765556707c655567
-000ff99ffff099fff000988800a00a9999899999a9900a00005555a00dddd0dd0ceeecc00ceeecc0000000000a9009a00a9779a07c666cc77c666c707cc666c7
-0fff9009ffff0999fff800080a9a099898899989999999a00055550000d0000d04aaa4c004aaa4c0000000009aa99aa99aa99aa907666c700766670007c66670
+000ff99ffff099fff000988800a00a9999899999a9900a00005555000dddd0dd0ceeecc00ceeecc0000000000a9009a00a9779a07c666cc77c666c707cc666c7
+0fff9009ffff0999fff800080a9a099898899989999999a00000000000d0000d04aaa4c004aaa4c0000000009aa99aa99aa99aa907666c700766670007c66670
 00090000900f000099888000a999a988888899889988999a00000000000d000000a0a00000a0a0000000000009aaaa9009aaaa90007777000077700000777700
 000f00000008000000000000000000000000000000000000080000800055500000555000000000000c111c000c111c0000000000070009770077700700ccc00c
 0f8f0000ff8800000000000000000000000000000000000088800888005950000055500000ccc0000c191c000c191c000000000070ccc907075557700c666cc0
