@@ -427,7 +427,7 @@ function _update60()
 		elseif (state.phase == outrophase and hasplayedoutro == true) then
 			state.phase = gamephase
 			dialogindex = 1
-		elseif (state.phase != gamephase and btnp() > 0) then
+		elseif (state.phase != gamephase and (btnp(4) or btnp(5))) then
 			dialogindex += 1
 
 			if (dialog[state.phase] and dialogindex > #dialog[state.phase]) then
@@ -583,16 +583,6 @@ function draw_startmenu()
 	-- draw map
 	map(maprect[1], maprect[2], maprect[5]*gridsize, maprect[6]*gridsize, maprect[3], maprect[4])
 
-	-- draw title header
-	rectfill(14, 12, 62, 20, 11)
-	print ("i t ' s	  a",  16, 14, 1)
-
-	-- blink start text
-	rectfill(28, 74, 94, 82, 1)
-	if (tick % 120 >= 60) then
-		print("press z to start", 30, 76, 13)
-	end
-
 	-- draw ice sheen
 	drawice()
 
@@ -604,6 +594,23 @@ function draw_startmenu()
 			sprgrid(blocks[i][j], i, j)
 		end
 	)
+
+	-- draw title header
+	rectfill(14, 12, 62, 20, 11)
+	print ("i t ' s	  a",  16, 14, 1)
+
+	-- draw subtitle
+	rectfill(28, 74, 94, 82, 6)
+	print("pico-8 prototype", 30, 76, 1);
+
+	-- blink start text
+	rectfill(28, 108, 94, 116, 6)
+	if (tick % 120 >= 60) then
+		print("press z to start", 30, 110, 1)
+	else
+		print("press z to start", 30, 110, 3)
+	end
+
 end
 
 function draw_endmenu()
