@@ -12,7 +12,7 @@ outrophase = "outro"
 keyitemphase = "keyitem"
 gamephase = "game"
 
-state={menu=game,lvl=10,phase=introphase}
+state={menu=startmenu,lvl=0,phase=introphase}
 
 maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
 
@@ -140,9 +140,6 @@ function _init()
 	if (state.menu == game) then
 		menuitem(1, "restart level", function() _init() playsound(1) end)
 		menuitem(2, "next level", nextlevel)
-	elseif (state.menu == endmenu) then
-		menuitem(1, "restart", function() state.menu = startmenu state.lvl = 0 _init() end)
-		menuitem(2)
 	else 
 		menuitem(1)
 		menuitem(2)
@@ -363,10 +360,7 @@ function _init()
 		exit.x = 4
 		exit.y = 0
 		exit.sprite = index.cexit
-		--aa(animals, index.rpenguin, {2,10,2,11,2,12})
-		--aa(blocks, index.block, {1,6,6,7,1,8,7,8,8,8,5,9,9,9,9,10,1,11})
-		
-		aas(animals, {index.ujelly1,9,4,index.jelly1,2,5, index.jelly2,1,9, index.jelly1,8,7, index.jelly2,1,9, index.monkey,6,2})
+		aas(animals, {105,1,5, 104,2,5, 105,8,6, 104,9,6, index.monkey,6,2})
 		aa(blocks, index.block, {5,8,6,11})
 
 		dialog[introphase] = {
