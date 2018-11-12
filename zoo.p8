@@ -19,8 +19,6 @@ maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
 -- player
 player = {}
 
-goal = nil
-
 -- consts
 gridsize = 8
 dimensions = 16
@@ -162,6 +160,7 @@ function _init()
 	player.goalsprite = nil
 	player.goalneededcount = 0
 	player.goalcount = 0
+	player.goal = nil
 	player.delay = 0
 	player.delayfunc = nil
 
@@ -172,8 +171,6 @@ function _init()
 	sprites = emptyarray(dimensions)
 	animals = emptyarray(dimensions)
 	blocks = emptyarray(dimensions)
-
-	goal = nil
 
 	-- config levels
 	if (state.lvl == 0) then
@@ -211,7 +208,7 @@ function _init()
 			{"noah", "mackers has them! you stupid","monkey, come back here!"}
 		}
 		dialog[keyitemphase] = {{"noah", "the key to the west garden!","now if i can find mackers..."}}
-		goal = "goal: collect yellow key"
+		player.goal = "goal: collect yellow key"
 	elseif (state.lvl == 2) then
 		-- w. garden 1
 		maprect = {12, 24, 12, 8, 2, 3}
@@ -225,7 +222,7 @@ function _init()
 		sprites[3][5] = index.key2
 		dialog[introphase] = {{"noah", "wait! at least he dropped the","rainforest key before he left."}}
 		dialog[keyitemphase] = {{"noah", "the key! guess i can go","back or mess around here for","a bit..."}}
-		goal = "goal: collect blue key"
+		player.goal = "goal: collect blue key"
 	elseif (state.lvl == 6) then
 		-- rainforest 1
 		maprect = {0, 8, 8, 8, 4, 4}
@@ -239,7 +236,7 @@ function _init()
 		blocks[6][4] = index.block
 		animals[2][5] = index.usnake
 		dialog[introphase] = {{"noah", "that snake doesn't look","very friendly..."}}
-		goal = "goal: collect yellow key"
+		player.goal = "goal: collect yellow key"
 	elseif (state.lvl == 7) then
 		-- aquarium 1 - new
 		maprect = {40, 0, 6, 11, 5, 2}
@@ -254,7 +251,7 @@ function _init()
 		aas(animals, {index.jelly1,2,3,index.jelly2,6,4,index.jelly1,2,7,index.ujelly2,3,10})
 		aa(sprites, index.tank, {4,6,5,11,6,8,3,5,3,1})
 		dialog[introphase] = {{"noah", "..."}}
-		goal = "goal: get red key"
+		player.goal = "goal: get red key"
 	elseif (state.lvl == 8) then
 		-- aquarium 1 
 		maprect = {0, 16, 8, 8, 4, 4}
@@ -269,7 +266,7 @@ function _init()
 		aas(animals, {index.flturtle,7,2,index.blturtle,8,2,index.ujelly1,2,1,index.jelly1,1,1,index.jelly1,6,6})
 		aa(sprites, index.tank, {2,3, 7,3, 5,7, 8,6, 4,5})
 		dialog[introphase] = {{"noah", "mackers, when did you learn to","scuba dive?"}}
-		goal = "goal: get red key"
+		player.goal = "goal: get red key"
 	elseif (state.lvl == 9) then
 		-- aquarium 2 
 		maprect = {24, 16, 9, 10, 3.5, 2.5}
@@ -301,7 +298,7 @@ function _init()
 			{"noah", "karen?"},
 			{"noah", "oh, well, i'm here anyway..."}
 		}
-		goal = "fish grads:"
+		player.goal = "fish grads:"
 	elseif (state.lvl == 3) then
 		-- tundra 1
 		maprect = {0, 0, 8, 6, 4, 4}
@@ -313,7 +310,7 @@ function _init()
 		sprites[7][4] = index.key3
 		aa(animals, index.dpenguin, {3,1,4,1,5,1})	
 		dialog[introphase] = {{"noah", "stop monkeying around,","the ice is slippery!"}}
-		goal = "goal: collect red key"
+		player.goal = "goal: collect red key"
 	elseif (state.lvl == 4) then
 		-- tundra 2 - new level
 		maprect = {27, 0, 11, 8, 2, 2}
@@ -340,13 +337,13 @@ function _init()
 			{"noah", "karen?"},
 		}
 		dialog[outrophase] = {{"noah", "penguins looking dapper, great.","time to get out of here...wait,","where is the door back?"}}
-		goal = "bow ties: "
+		player.goal = "goal: bow ties "
 	elseif (state.lvl == 5) then
 		-- tundra 3
 		maprect = {8, 0, 8, 8, 4, 4}
 		player.x = 3
 		player.y = 1
-		exit.x = 8
+		exit.x = 9
 		exit.y = 7
 		exit.sprite = index.cexit
 		sprites[1][7] = index.key
@@ -355,7 +352,7 @@ function _init()
 		dialog[introphase] = {
 			{"noah", "..."},
 		}
-		goal = "goal: collect yellow key"
+		player.goal = "goal: collect yellow key"
 	elseif (state.lvl == 10) then
 		-- tundra 2
 		maprect = {34, 14, 9, 13, 3.5, 1}
@@ -742,11 +739,11 @@ function draw_level()
 
 	-- ui
 	if (player.goalneededcount > 0) then
-		local goalstring = goal .. player.goalcount .. "/" .. player.goalneededcount
+		local goalstring = player.goal .. player.goalcount .. "/" .. player.goalneededcount
 		print(goalstring, 0, 1)
 		spr(player.goalsprite, #goalstring * textwidth + 2, 0)
-	elseif (goal) then
-		print (goal, 1)
+	elseif (player.goal) then
+		print (player.goal, 1)
 	end
 
 	-- dialog
@@ -1183,7 +1180,7 @@ function pickup(x, y)
 	if (s >= index.key and s <= index.key4) then
 		exit.sprite = index.oexit
 
-		goal = ""
+		player.goal = ""
 
 		state.phase = keyitemphase
 		dialogindex = 1
@@ -1247,6 +1244,7 @@ function updatewornitems()
 		dialogindex = 1
 
 		player.goalneededcount = 0
+		player.goal = ""
 	end
 end
 
