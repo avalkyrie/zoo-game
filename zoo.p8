@@ -127,10 +127,6 @@ animals = {}
 blocks = {}
 exit = {}
 
--- counters
-steps = 0
-asteps = 0
-
 function _init()
 	reload(0x2000, 0x2000, 0x1000) -- reload map tiles
 
@@ -164,9 +160,6 @@ function _init()
 	player.goalcount = 0
 	player.delay = 0
 	player.delayfunc = nil
-
-	steps=0
-	asteps=0
 
 	dialog = {}
 	dialogindex = 1
@@ -527,7 +520,6 @@ function _update60()
 		end
 
 		if (moveplayer(dx,dy)) then
-			steps+=1
 			player.oxygen-=1
 
 			if (player.sdx == 0 and player.sdy == 0) then
@@ -722,16 +714,9 @@ function draw_level()
 	end
 
 	-- ui
-	local message = "steps " .. steps
-
 	if (player.goalsprite) then
-		print(message, 0, 1)
-
-		local goalx = (#message+2) * textwidth
-		spr(player.goalsprite, goalx, 0)
+		spr(player.goalsprite, 0, 0)
 		print(player.goalcount .. "/" .. player.goalneededcount, goalx+gridsize+textwidth, 1)
-	else 
-		print(message)
 	end
 
 	-- dialog
@@ -988,8 +973,6 @@ function movepatrolinganimals()
 			end
 		end
 	)
-
-	asteps += 1
 end
 
 function movestartmenuanimals()
