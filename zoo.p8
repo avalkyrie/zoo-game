@@ -12,7 +12,7 @@ outrophase = "outro"
 keyitemphase = "keyitem"
 gamephase = "game"
 
-state={menu=game,lvl=2,phase=introphase}
+state={menu=game,lvl=3,phase=introphase}
 
 maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
 
@@ -226,7 +226,7 @@ function _init()
 		dialog[introphase] = {{"noah", "wait! at least he dropped the","rainforest key before he left."}}
 		dialog[keyitemphase] = {{"noah", "the key! guess i can go","back or mess around here for","a bit..."}}
 		goal = "goal: collect green key"
-	elseif (state.lvl == 3) then
+	elseif (state.lvl == 6) then
 		-- rainforest 1
 		maprect = {0, 8, 8, 8, 4, 4}
 		player.isvertical = true
@@ -235,25 +235,13 @@ function _init()
 		exit.x = 0
 		exit.y = 7
 		exit.sprite = index.cexit
-		sprites[3][6] = index.key2
+		sprites[3][6] = index.key
 		blocks[6][4] = index.block
 		animals[2][5] = index.usnake
 		dialog[introphase] = {{"noah", "that snake doesn't look","very friendly..."}}
-		goal = "goal: collect key"
-	elseif (state.lvl == 10) then
-		-- rainforest 2 - unused
-		maprect = {8, 8, 16, 8, 0, 4}
-		player.isvertical = true
-		player.x = 12
-		player.y = 2
-		exit.x = 1
-		exit.y = 8
-		exit.sprite = index.oexit
-		aas(sprites, {index.yenest,2,2,index.benest,15,2,index.penest,7,7})
-		aas(animals, {index.pbird2,4,3,index.bbird2,13,6,index.usnake,2,8})
-		aa(blocks, index.block, {2,5,11,3,14,3})
-	elseif (state.lvl == 4) then
-		-- aquarium 1
+		goal = "goal: collect yellow key"
+	elseif (state.lvl == 7) then
+		-- aquarium 1 - NEW
 		maprect = {0, 16, 8, 8, 4, 4}
 		player.x = 1
 		player.y = 8
@@ -267,7 +255,22 @@ function _init()
 		aa(sprites, index.tank, {2,3, 7,3, 5,7, 8,6})
 		dialog[introphase] = {{"noah", "mackers, when did you learn to","scuba dive?"}}
 		goal = "goal: collect key"
-	elseif (state.lvl == 5) then
+	elseif (state.lvl == 8) then
+		-- aquarium 1 
+		maprect = {0, 16, 8, 8, 4, 4}
+		player.x = 1
+		player.y = 8
+		player.oxygen = 6
+		player.sprite = index.playerscuba
+		exit.x = 1
+		exit.y = 0
+		exit.sprite = index.cexit
+		sprites[8][8] = index.key
+		aas(animals, {index.flturtle,7,2,index.blturtle,8,2,index.ujelly1,2,1,index.jelly1,1,1,index.jelly1,6,6})
+		aa(sprites, index.tank, {2,3, 7,3, 5,7, 8,6})
+		dialog[introphase] = {{"noah", "mackers, when did you learn to","scuba dive?"}}
+		goal = "goal: collect key"
+	elseif (state.lvl == 9) then
 		-- aquarium 2 
 		maprect = {24, 16, 9, 10, 3.5, 2.5}
 		player.x = 5
@@ -298,7 +301,7 @@ function _init()
 			{"noah", "karen?"},
 			{"noah", "oh, well, i'm here anyway..."}
 		}
-	elseif (state.lvl == 6) then
+	elseif (state.lvl == 3) then
 		-- tundra 1
 		maprect = {0, 0, 8, 6, 4, 4}
 		player.x = 4
@@ -306,12 +309,27 @@ function _init()
 		exit.x = 6
 		exit.y = 0
 		exit.sprite = index.cexit
-		sprites[7][4] = index.key
+		sprites[7][4] = index.key3
 		aa(animals, index.dpenguin, {3,1,4,1,5,1})	
 		dialog[introphase] = {{"noah", "stop monkeying around,","the ice is slippery!"}}
-		goal = "goal: collect key"
-	elseif (state.lvl == 7) then
+		goal = "goal: collect red key"
+	elseif (state.lvl == 4) then
 		-- tundra 2
+		maprect = {8, 0, 8, 8, 4, 4}
+		player.x = 1
+		player.y = 3
+		player.goalsprite = index.bow
+		player.goalneededcount = 3
+		exit.x = 6
+		exit.y = 9
+		exit.sprite = index.oexit
+		aa(sprites, index.bow, {2,4,4,2,6,1})
+		aa(blocks, index.block, {2,2,6,2})
+		aa(animals, index.dpenguin, {3,1,4,1,5,1})
+		animals[4][5] = index.bwhale
+		animals[3][5] = index.fwhale
+	elseif (state.lvl == 5) then
+		-- tundra 3
 		maprect = {8, 0, 8, 8, 4, 4}
 		player.x = 1
 		player.y = 3
@@ -339,7 +357,7 @@ function _init()
 			{"noah", "karen?"},
 		}
 		dialog[outrophase] = {{"noah", "penguins looking dapper, great.","time to get out of here...wait,","where is the door back?"}}
-	elseif (state.lvl == 8) then
+	elseif (state.lvl == 10) then
 		-- tundra 2
 		maprect = {34, 14, 9, 13, 3.5, 1}
 		player.x = 4
@@ -363,7 +381,7 @@ function _init()
 			{"noah", "oh, that's it? find the soul","of a kitsune and freeze it?","thanks karen!"}
 		}
 		dialog[outrophase] = {{"noah", "phew! someone else has got to","thaw that thing out tomorrow.","for now, i'm going home!"}}
-	elseif (state.lvl == 9) then
+	elseif (state.lvl == 11) then
 		-- end menu
 		maprect = {96, 0, 16, 16, 0, 0}
 		aa(animals, 218, {5,8}) -- hat bunny
@@ -754,7 +772,7 @@ function nextlevel()
 	hasplayedkey = false
 	hasplayedoutro = false
 	
-	if (state.lvl == 9) state.menu = endmenu
+	if (state.lvl == 11) state.menu = endmenu
 	_init()
 end
 
