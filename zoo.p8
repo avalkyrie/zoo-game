@@ -12,7 +12,7 @@ outrophase = "outro"
 keyitemphase = "keyitem"
 gamephase = "game"
 
-state={menu=game,lvl=1,phase=introphase}
+state={menu=game,lvl=6,phase=introphase}
 
 maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
 
@@ -239,7 +239,7 @@ function _init()
 		player.goal = "goal: collect yellow key"
 	elseif (state.lvl == 7) then
 		-- aquarium 1 - new
-		maprect = {40, 0, 6, 11, 5, 2}
+		maprect = {40, 0, 6, 11, 5, 3}
 		player.x = 5
 		player.y = 1
 		player.oxygen = 6
@@ -726,8 +726,7 @@ function draw_level()
 	-- oxygen meter
 	if (player.oxygen > -1) then
 		for i=0, player.oxygen-1 do
-			spr(230+i, 8*(15+i-6),0)
-			--sprgrid(230+i, maprect[3]+maprect[5]-6+i, maprect[4]+1)
+			spr(230+i, 8*(10+i),0)
 		end
 	end
 
@@ -740,10 +739,10 @@ function draw_level()
 	-- ui
 	if (player.goalneededcount > 0) then
 		local goalstring = player.goal .. player.goalcount .. "/" .. player.goalneededcount
-		print(goalstring, 0, 1)
-		spr(player.goalsprite, #goalstring * textwidth + 2, 0)
+		print(goalstring, 0, 2, 6)
+		spr(player.goalsprite, #goalstring * textwidth + 2, 1)
 	elseif (player.goal) then
-		print (player.goal, 1)
+		print (player.goal, 0, 2, 6)
 	end
 
 	-- dialog
