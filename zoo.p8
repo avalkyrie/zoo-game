@@ -650,8 +650,8 @@ function draw_endmenu()
 	-- draw sprites
 	iteratemap(
 		function(i,j)
-			sprgrid(sprites[i][j], i, j)
-			sprgrid(animals[i][j], i, j)
+			sprgrid(sprites[i][j], i, j-1.5)
+			sprgrid(animals[i][j], i, j-1.5)
 		end
 	)
 
@@ -660,23 +660,26 @@ function draw_endmenu()
 	-- draw keys for our names
 	iteratemap(
 		function(i,j)
-			sprgrid(blocks[i][j], i, j)
+			sprgrid(blocks[i][j], i+2, j+1)
 		end
 	)
 
 	local x = 20
 
-	print("thank you for playing our demo!", 3, 6)
+	local s1 = "thank you for playing"
+	local s2 = "our prototype!"
+	print(s1, (128 - #s1 * textwidth) / 2, 58)
+	print(s2, (128 - #s2 * textwidth) / 2, 68)
 
 	-- draw logo text
 	local len = #"weird sisters"
 	local logox = (128 - len*textwidth - 1)/2
-	local logoy = 24
+	local logoy = 10
 	rectfill(logox - 5, logoy - 5, logox + len*textwidth + 5, logoy + 22, 5)
 	print ("weird sisters\n\n interactive", logox, logoy, 7)
 
-	x = 44
-	local y = 75
+	x = 60
+	local y = 82
 	print ("ava", x, y, 7)
 	print ("rachel", x, y+16, 7)
 	print ("jessica", x, y+32, 7)
