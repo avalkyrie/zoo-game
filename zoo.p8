@@ -12,7 +12,7 @@ outrophase = "outro"
 keyitemphase = "keyitem"
 gamephase = "game"
 
-state={menu=game,lvl=10,phase=introphase}
+state={menu=startmenu,lvl=0,phase=introphase}
 
 maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
 
@@ -1014,6 +1014,10 @@ function animatewater()
 					msetspr(2, x, y)
 				elseif(mgetspr(x, y) == 2) then
 					msetspr(1, x, y)
+				elseif(mgetspr(x, y) == 50) then
+					msetspr(51, x, y)
+				elseif(mgetspr(x, y) == 51) then
+					msetspr(50, x, y)
 				end
 			end
 		)
