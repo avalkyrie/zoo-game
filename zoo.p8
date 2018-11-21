@@ -12,7 +12,7 @@ outrophase = "outro"
 keyitemphase = "keyitem"
 gamephase = "game"
 
-state={menu=startmenu,lvl=0,phase=introphase}
+state={menu=game,lvl=10,phase=introphase}
 
 maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
 
@@ -196,18 +196,25 @@ function _init()
 		aa(animals, index.rabbit, {4,5,6,6})
 		aa(sprites, index.key1, {4,1})
 		dialog[introphase] = {
-			{"announcer","birnam zoo will be closing in","in 5 min"},
-			{"noah", "finally"},
-			{"noah", "closing time. i hope you had a","great time at the zoo!"},
-			{"mom", "now kids, what do you say","to noah the zookeeper for","showing us around today?"},
-			{"kids", "thank you noah!"},
-			{"noah", "no problem, see you next time!"},
-			{"noah", "i thought this day would never","end! i can finally go home."},
-			{"note on door", "noah, can you","please lock the office when","you're done? had to leave","early. sorry! exhibits should","be locked already!","                    ~karen"},
-			{"noah", "of course. perfect.","wait, where are my keys? they","were on my belt a second","ago.."},
-			{"noah", "mackers has them! you stupid","monkey, come back here!"}
+			"noah: *huffs* finally",
+			"noah: alright folks, it's closing time!",
+			"noah: i hope you had a great time at the zoo! ",
+			"mom: now kids what do you say to noah the zookeeper for showing us around today?",
+			"kids: thank you noah!",
+			"noah: no problem see you next time!",
+			"noah: i thought this day would never end! i can finally go home.",
+			"<mackers1>",
+			"noah: did my boss leave me another one of her \"helpful\" notes. what is it this time...",
+			"note on door: noah can you please lock the office when you're done? had to leave early. sorry! exhibits should be locked already!                    ~karen",
+			"<mackers2>",
+			"noah: of course. perfect. wait where are my keys? they were on my belt a second ago..",
+			"<mackers3>",
+			"noah: mackers has them! you stupid monkey come back here!",
+			"noah: of course. he dropped one of the keys behind the trash cans. let's see if i can manage to grab it without running into those prickly rose bushes."
 		}
-		dialog[keyitemphase] = {{"noah", "the key to the west garden!","now if i can find mackers..."}}
+		
+		dialog[keyitemphase] = {"noah: the key to the bunny enclosures! now i have to go through this whole zoo to catch that *#%$ monkey! he went right through this door..."}
+		
 		player.goal = "goal: collect yellow key"
 	elseif (state.lvl == 2) then
 		-- w. garden 1
@@ -220,8 +227,11 @@ function _init()
 		aa(blocks, index.block, {10,3,10,6, 3,7, 2,5, 3,4, 4,5, 2,4, 2,6,4,3, 5,4,5,5,4,6,4,7,4,8,6,6,6,3})
 		aa(animals, index.rabbit, {9,7,11,8,9,1,11,2})
 		sprites[3][5] = index.key2
-		dialog[introphase] = {{"noah", "wait! at least he dropped the","rainforest key before he left."}}
-		dialog[keyitemphase] = {{"noah", "the key! guess i can go","back or mess around here for","a bit..."}}
+		dialog[introphase] = {
+			"<mackers2.1>",
+			"noah: wait! at least he dropped the tundra key before he left.",
+			"noah: why are all these crates laying in the middle of the bunny enclosure? i am the only one who does any work here?"}
+		dialog[keyitemphase] = {"noah: the key to the tundra! guess i can go follow him or mess around here for a bit..."}
 		player.goal = "goal: collect pink key"
 	elseif (state.lvl == 6) then
 		-- rainforest 1
@@ -235,7 +245,18 @@ function _init()
 		sprites[3][6] = index.key1
 		blocks[6][4] = index.block
 		animals[2][5] = index.usnake
-		dialog[introphase] = {{"noah", "that snake doesn't look","very friendly..."}}
+		dialog[introphase] = {
+			"noah: it sure is high up here in the trees! there you are mackers!",
+			"<mackers6.1>",
+			"noah: no wait! i'm scared of heights! get me down!"
+		}
+		dialog[keyitemphase] = {
+			"noah: oh great, it looks like he dropped another key...",
+			"noah: right next to that not so friendly looking snake!",
+		}
+		dialog[outrophase] = {
+			"noah: the key to the aquarium! he can't get far! monkeys can't swim...right?"
+		}
 		player.goal = "goal: collect yellow key"
 	elseif (state.lvl == 7) then
 		-- aquarium 1 - new
@@ -250,7 +271,11 @@ function _init()
 		sprites[4][11] = index.key3
 		aas(animals, {index.jelly1,2,3,index.jelly2,6,4,index.jelly1,2,6,index.ujelly2,3,10})
 		aa(sprites, index.tank, {4,6,5,11,6,8,3,5,3,1})
-		dialog[introphase] = {{"noah", "..."}}
+		dialog[introphase] = {
+			"noah: well, i guess *most monkeys* can't swim, but this one can! mackers get back here!",
+			"<mackers7.1>",
+			"noah: agh. i'm not a great diver but i have to get that key!  good thing all these oxygen tanks are scattered around the aquarium. i wonder if these jellyfish sting..."
+		}
 		player.goal = "goal: get red key"
 	elseif (state.lvl == 8) then
 		-- aquarium 1 
@@ -265,7 +290,14 @@ function _init()
 		sprites[2][1] = index.key3
 		aas(animals, {index.flturtle,4,3,index.blturtle,5,3,index.jelly1,2,2,index.jelly1,1,2,index.jelly1,6,7})
 		aa(sprites, index.tank, {2,5, 3,6, 5,4})
-		dialog[introphase] = {{"noah", "mackers, when did you learn to","scuba dive?"}}
+		dialog[introphase] = {
+			"noah: mackers, when did you learn to scuba dive?",
+			"<mackers8.1>",
+			"noah: oh, one of those stubborn turtles looks hungry. sometimes they just need a push in the right direction...don't we all?",
+		}
+		dialog[outrophase] = {
+			"noah: guess we are going to have to get more jellyfish for the exhibit...but that seems like a problem for tomorrow me.",
+		}
 		player.goal = "goal: get red key"
 	elseif (state.lvl == 9) then
 		-- aquarium 2 
@@ -289,14 +321,19 @@ function _init()
 		aa(animals, index.fish, {8,1,9,1,6,8,7,8})
 		aa(animals, index.jelly1, {4,3,5,3,6,6,7,6})
 		dialog[introphase] = {
-			{"karen", "noah? do you copy? noah?"},
-			{"noah", "karen? i'm a bit underwater","at the moment..."},
-			{"karen", "you in the aquarium?","perfect!"},
-			{"karen", "the schools of fish passed","all their tests today!"},
-			{"karen", "can you make sure they","graduate before you leave?","thx!"},
-			{"noah", "can't it wait till tomorrow?", "karen?"},
-			{"noah", "karen?"},
-			{"noah", "oh, well, i'm here anyway..."}
+			"<advancescreen2>",
+			"noah: i need this day to be over.",
+			"noah: where is that %$\x8f#\x92 monkey?",
+			"karen: noah? are you still at the zoo?",
+			"noah: yes, karen.",
+			"noah: i haven't left yet. i'm just about to leave now-",
+			"karen: oh, not yet! please make sure the penguins are ready for the evening before you go. they are in the tundra.",
+			"noah: i know where the penguins are, karen. i work here.",
+			"karen: great! their bowties are in the tundra too!",
+			"noah: bowties? where are these penguins going, the opera?",
+			"noah: karen?",
+			"<9>",
+			"noah: ..."
 		}
 		player.goal = "fish grads:"
 	elseif (state.lvl == 3) then
@@ -309,7 +346,11 @@ function _init()
 		exit.sprite = index.cexit
 		sprites[7][4] = index.key0
 		aa(animals, index.dpenguin, {3,1,4,1,5,1})	
-		dialog[introphase] = {{"noah", "stop monkeying around,","the ice is slippery!"}}
+		dialog[introphase] = {
+			"<mackers3.1>",
+			"noah: stop monkeying around! you're on thin ice mackers!",
+			"noah: oh this ice is slippery. how do these cute penguins waddle around so easily?"
+			}
 		player.goal = "goal: collect red key"
 	elseif (state.lvl == 4) then
 		-- tundra 2 - new level
@@ -325,18 +366,25 @@ function _init()
 		aa(blocks, index.block, {7,5})
 		aa(animals, index.dpenguin, {2,6,6,6,10,6})
 		dialog[introphase] = {
-			{"noah", "i need this day to be over."},
-			{"noah", "where is that %$\x8f#\x92 monkey?"},
-			{"karen", "noah? are you still at the", "zoo?"},
-			{"noah", "yes, karen."},
-			{"noah", "i haven't left yet.","i'm just about to leave now-"},
-			{"karen", "oh, not yet! please make","sure the penguins are ready","for the evening before you","go. they are in the tundra."},
-			{"noah", "i know where the penguins are,","karen. i work here."},
-			{"karen", "great! their bowties are in","the tundra too!"},
-			{"noah", "bowties? where are these","penguins going, the opera?"},
-			{"noah", "karen?"},
+			"<advancescreen1>",
+			"noah: i need this day to be over.",
+			"noah: where is that %$\x8f#\x92 monkey?",
+			"karen: noah? are you still at the zoo?",
+			"noah: yes, karen.",
+			"noah: i haven't left yet. i'm just about to leave now-",
+			"karen: oh, not yet! please make sure the penguins are ready for the evening before you go. they are in the tundra.",
+			"noah: i know where the penguins are, karen. i work here.",
+			"karen: great! their bowties are in the tundra too!",
+			"noah: bowties? where are these penguins going, the opera?",
+			"noah: karen?",
+			"<4>",
+			"noah: alright little penguins, hold still. i've got to put these bow ties on you.",
+			"noah: you're going to look great. ",
 		}
-		dialog[outrophase] = {{"noah", "penguins looking dapper, great.","time to get out of here...wait,","where is the door back?"}}
+		dialog[outrophase] = {
+			"<4end>",
+			"noah: looking dapper, kids! great. time to get out of here...now where are the rest of my keys",
+		}
 		player.goal = "goal: bow ties "
 	elseif (state.lvl == 5) then
 		-- tundra 3
@@ -353,7 +401,14 @@ function _init()
 		aa(blocks, index.block, {5,3,2,8})
 		
 		dialog[introphase] = {
-			{"noah", "..."},
+			"noah: oh wow. how convenient.",
+			"noah: my key is on the *other* side of this freezing water.",
+			"noah: how am i supposed to get across?",
+			"noah: i wonder if these crates float...",
+		}
+		dialog[outrophase] = {
+			"noah: glad those crates could bridge the gap! ",
+			"noah: brrr...i didn't realize how cold it was. good thing this is the key to the jungle. i can warm up and hopefully find that monkey!",
 		}
 		player.goal = "goal: bow tie "
 	elseif (state.lvl == 10) then
@@ -368,11 +423,11 @@ function _init()
 		aa(blocks, index.block, {5,8,6,11})
 
 		dialog[introphase] = {
-			{"noah", ".."}
+			"noah: .."
 		}
 		dialog[keyitemphase] = {
-			{"noah", "finally!"},
-			{"monkey", "the monkey looks defeated."}
+			"noah: finally!",
+			"monkey: the monkey looks defeated."
 		}
 		player.goal = "goal: get the %\x8f$\x92 monkey"
 	elseif (state.lvl == 11) then
@@ -384,18 +439,18 @@ function _init()
 		aas(blocks, {243,5,10,242,5,12,241,5,14}) --keys
 
 		dialog[introphase] = {
-			{"noah", "finally, home! i get to enjoy","the rest of my birthday in","peace and quiet!"},
-			{"karen and coworkers", "surprise!","happy birthday!"},
-			{"noah", "karen? what are you and all","the other zookeepers doing","here? i thought you left","early-"},
-			{"karen and coworkers", "we were getting ready for your","party silly. we had to stall!"},
-			{"noah", "mackers stealing my keys?"},
-			{"coworkers", "that was us."},
-			{"noah", "the fish and the penguins?"},
-			{"coworkers", "yup. us too!"},
-			{"noah", "the fire kitsune?"},
-			{"coworkers", "you sound mad..."},
-			{"noah", "get out."},
-			{"", "           the end"},
+			"noah: finally, home! i get to enjoy the rest of my birthday in peace and quiet!",
+			"karen and coworkers: surprise! happy birthday!",
+			"noah: karen? what are you and all the other zookeepers doing here? i thought you left early-",
+			"karen and coworkers: we were getting ready for your party silly. we had to stall!",
+			"noah: mackers stealing my keys?",
+			"coworkers: that was us.",
+			"noah: the fish and the penguins?",
+			"coworkers: yup. us too!",
+			"noah: the fire kitsune?",
+			"coworkers: you sound mad...",
+			"noah: get out.",
+			":             the end",
 		}
 	end
 end
@@ -636,11 +691,8 @@ function draw_endmenu()
 	-- draw dialog
 	if (state.phase != gamephase and dialog[state.phase]) then
 		local d = dialog[state.phase][dialogindex]
-		if (d and d[1] == "karen") then
-			drawbossbox(d)
-		else
-			drawbox(d)
-		end
+		local dx = splitdialog(d)
+		drawbox(dx)
 	end
 
 	if (state.phase == introphase and dialogindex < 2) return
@@ -758,10 +810,13 @@ function draw_level()
 		if (state.phase == outrophase and hasplayedoutro == true) return
 
 		local d = dialog[state.phase][dialogindex]
-		if (d and d[1] == "karen") then
-			drawbossbox(d)
+		
+		local dx = splitdialog(d)
+		
+		if (dx and dx[1] == "karen") then
+			drawbossbox(dx)
 		else
-			drawbox(d)
+			drawbox(dx)
 		end
 	end
 end
@@ -788,6 +843,75 @@ end
 -- sound turned off until someone who actually knows sounds can redo them
 function playsound(s)
 	--sfx(s)
+end
+
+function splitdialog(text) 
+	if (text == nil) return
+	
+	-- This is a bit hacky but it make the text more natural to enter
+	if (#text) then
+		local str = text
+		
+		local splitchar = 0
+		for i = 1, #str do
+			if (sub(str, i, i) == ":") then
+				splitchar = i
+				break
+			end
+		end
+		
+		text = {}
+		text[1] = sub(str, 1, splitchar - 1)
+		
+		-- split the rest of the text on whitespace into lines
+		local maxwidth = 30
+		
+		if (text[1] == "karen") then
+			maxwidth = 28
+		end
+		
+		local lastindex = splitchar + 2
+		local index = lastindex - 1
+		local lineindex = 2
+		
+		while index < #str do
+			index += maxwidth -- try to fill an entire line
+			
+			local removedSpace = false
+			
+			if (index >= #str) then
+				-- remainder of string case
+				index = #str
+			else
+				if (sub(str, index+1, index+1) == " ") then
+					-- full word should fit
+					removedSpace = true
+				else 
+					local backwards = index
+					while backwards > lastindex do
+						if (sub(str, backwards, backwards) == " ") then
+							index = backwards - 1
+							removedSpace = true
+							break
+						end
+						
+						backwards -= 1
+					end
+				end
+			end
+			
+			text[lineindex] = sub(str, lastindex, index)
+
+			lastindex = index + 1
+			if (removedSpace == true) then
+				lastindex += 1
+			end
+			
+			lineindex += 1
+		end
+	end
+	
+	return text
 end
 
 -- number of lines to fit, special top left corner, regular corner, side, top
