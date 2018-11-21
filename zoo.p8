@@ -7,12 +7,13 @@ startmenu = 1
 endmenu = 3
 game = 4
 
+advancephase = "advance"
 introphase = "intro"
 outrophase = "outro"
 keyitemphase = "keyitem"
 gamephase = "game"
 
-state={menu=startmenu,lvl=0,phase=introphase}
+state={menu=startmenu,lvl=0,phase=advancephase}
 
 maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
 
@@ -108,6 +109,7 @@ index = {
 -- text boxes
 dialog = {}
 dialogindex = 1
+hasplayedadvance = false
 hasplayedintro = false
 hasplayedkey = false
 hasplayedoutro = false
@@ -135,7 +137,12 @@ exit = {}
 function _init()
 	reload(0x2000, 0x2000, 0x1000) -- reload map tiles
 
-	state.phase = introphase
+	hasplayedadvance = false
+	hasplayedintro = false
+	hasplayedkey = false
+	hasplayedoutro = false
+	
+	state.phase = advancephase
 
 	-- setup menu items
 	if (state.menu == game) then
@@ -195,6 +202,9 @@ function _init()
 		aas(sprites, {201,2,1,202,6,1, 202,1,1})
 		aa(animals, index.rabbit, {4,5,6,6})
 		aa(sprites, index.key1, {4,1})
+		dialog[advancephase] = {
+			"announcer: birnam zoo will be closing in 5 minutes.",
+		}
 		dialog[introphase] = {
 			"noah: *huffs* finally",
 			"noah: alright folks, it's closing time!",
@@ -255,7 +265,7 @@ function _init()
 			"noah: right next to that not so friendly looking snake!",
 		}
 		dialog[outrophase] = {
-			"noah: the key to the aquarium! he can't get far! monkeys can't swim...right?"
+			"noah: the key to the aquarium! he can't get far! monkeys can't swim... right?"
 		}
 		player.goal = "goal: collect yellow key"
 	elseif (state.lvl == 7) then
@@ -320,8 +330,7 @@ function _init()
 		animals[3][7] = index.blturtle
 		aa(animals, index.fish, {8,1,9,1,6,8,7,8})
 		aa(animals, index.jelly1, {4,3,5,3,6,6,7,6})
-		dialog[introphase] = {
-			"<advancescreen2>",
+		dialog[advancephase] = {
 			"noah: i need this day to be over.",
 			"noah: where is that %$\x8f#\x92 monkey?",
 			"karen: noah? are you still at the zoo?",
@@ -332,7 +341,9 @@ function _init()
 			"karen: great! their bowties are in the tundra too!",
 			"noah: bowties? where are these penguins going, the opera?",
 			"noah: karen?",
-			"<9>",
+		}
+
+		dialog[introphase] = {
 			"noah: ..."
 		}
 		player.goal = "fish grads:"
@@ -365,8 +376,7 @@ function _init()
 		aa(sprites, index.bow, {8,1,7,4,9,6})
 		aa(blocks, index.block, {7,5})
 		aa(animals, index.dpenguin, {2,6,6,6,10,6})
-		dialog[introphase] = {
-			"<advancescreen1>",
+		dialog[advancephase] = {
 			"noah: i need this day to be over.",
 			"noah: where is that %$\x8f#\x92 monkey?",
 			"karen: noah? are you still at the zoo?",
@@ -377,12 +387,12 @@ function _init()
 			"karen: great! their bowties are in the tundra too!",
 			"noah: bowties? where are these penguins going, the opera?",
 			"noah: karen?",
-			"<4>",
+		}
+		dialog[introphase] = {
 			"noah: alright little penguins, hold still. i've got to put these bow ties on you.",
 			"noah: you're going to look great. ",
 		}
 		dialog[outrophase] = {
-			"<4end>",
 			"noah: looking dapper, kids! great. time to get out of here...now where are the rest of my keys",
 		}
 		player.goal = "goal: bow ties "
@@ -487,29 +497,26 @@ function _update60()
 		end
 	end
 
-	if (state.phase != gamephase) then
-		if (state.phase == introphase and hasplayedintro == true) then
-			state.phase = gamephase
+	if (state.phase != gamephase and state.menu != startmenu) then
+		while (state.phase != gamephase and (dialog[state.phase] == nil or dialogindex > #dialog[state.phase])) do
+			if (state.phase == advancephase) hasplayedadvance = true
+			if (state.phase == introphase) hasplayedintro = true
+			if (state.phase == keyitemphase) hasplayedkey = true
+			if (state.phase == outrophase) hasplayedoutro = true
 			dialogindex = 1
-		elseif (state.phase == keyitemphase and hasplayedkey == true) then
-			state.phase = gamephase
-			dialogindex = 1
-		elseif (state.phase == outrophase and hasplayedoutro == true) then
-			state.phase = gamephase
-			dialogindex = 1
-		elseif (state.phase != gamephase and (btnp(4) or btnp(5))) then
-			dialogindex += 1
-
-			if (dialog[state.phase] and dialogindex > #dialog[state.phase]) then
-				if (state.phase == introphase) hasplayedintro = true
-				if (state.phase == keyitemphase) hasplayedkey = true
-				if (state.phase == outrophase) hasplayedoutro = true
+			
+			if (state.phase == advancephase and hasplayedadvance == true) then
+				state.phase = introphase
+			elseif (hasplayedoutro == true) then
+				nextlevel()
+			else
 				state.phase = gamephase
-				dialogindex = 1
 			end
 		end
-
-		if (state.phase == keyitemphase and dialog[keyitemphase] == nil) state.phase = gamephase
+		
+		if (btnp(4) or btnp(5)) then
+			dialogindex += 1
+		end
 	end
 
 	if (state.phase != gamephase) return
@@ -621,10 +628,11 @@ function _update60()
 
 	-- did the player win?
 	if (player.x == exit.x and player.y == exit.y) then
-		if (hasplayedoutro or dialog[state.phase] == nil) then
+		if (hasplayedoutro == true) then
 			nextlevel()
 		else
 			state.phase = outrophase
+			dialogindex = 1
 		end
 	end
 
@@ -738,6 +746,19 @@ end
 
 function draw_level()
 	cls()
+	
+	-- draw advance phase (black)
+	if (state.phase == advancephase and dialog[state.phase] and hasplayedintro == false) then
+		local d = dialog[state.phase][dialogindex]
+		local dx = splitdialog(d)		
+		if (dx and dx[1] == "karen") then
+			drawbossbox(dx)
+		else
+			drawbox(dx)
+		end
+		
+		return
+	end
 
 	-- draw map with border
 	local ox = maprect[5]*gridsize
@@ -805,6 +826,7 @@ function draw_level()
 
 	-- dialog
 	if (state.phase != gamephase and dialog[state.phase]) then
+		if (state.phase == advancephase and hasplayedadvance == true) return
 		if (state.phase == introphase and hasplayedintro == true) return
 		if (state.phase == keyitemphase and hasplayedkey == true) return
 		if (state.phase == outrophase and hasplayedoutro == true) return
@@ -823,10 +845,6 @@ end
 
 function nextlevel()
 	state.lvl += 1
-	
-	hasplayedintro = false
-	hasplayedkey = false
-	hasplayedoutro = false
 	
 	if (state.lvl == 11) state.menu = endmenu
 	_init()
