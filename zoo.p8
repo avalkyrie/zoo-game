@@ -2,7 +2,6 @@ pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
 
--- game state
 startmenu = 1
 endmenu = 3
 game = 4
@@ -15,17 +14,13 @@ gamephase = "game"
 
 state={menu=startmenu,lvl=0,phase=advancephase}
 
-maprect = {} -- x, y, width, height, xdrawoffset, ydrawoffset
-
--- player
+maprect = {}
 player = {}
 
--- consts
 gridsize = 8
 dimensions = 16
 textwidth = 4
 
--- sprite indexes
 index = {
 	player = 64,
 	playerscuba = 87,
@@ -106,7 +101,6 @@ index = {
 	ice = 32,
 }
 
--- text boxes
 dialog = {}
 dialogindex = 1
 hasplayedadvance = false
@@ -114,7 +108,6 @@ hasplayedintro = false
 hasplayedkey = false
 hasplayedoutro = false
 
--- sprite flags
 fwalkable = 0x1
 fwater = 0x2
 fice = 0x4
@@ -122,43 +115,30 @@ fclimbable = 0x20
 fdeath = 0x40
 fstandable = 0x80
 
--- debug
-blkmsg = 0
-
--- animations
 tick = 0
 
--- current block sprite positions
 sprites = {}
 animals = {}
 blocks = {}
 exit = {}
 
 function _init()
-	reload(0x2000, 0x2000, 0x1000) -- reload map tiles
+	reload(0x2000, 0x2000, 0x1000)
 
-	hasplayedadvance = false
-	hasplayedintro = false
-	hasplayedkey = false
-	hasplayedoutro = false
-	
-	state.phase = advancephase
-
-	-- setup menu items
 	if (state.menu == game) then
-		menuitem(1, "restart level", function() _init() playsound(1) end)
+		menuitem(1, "restart level", function() _init() end)
 		menuitem(2, "next level", nextlevel)
 	else 
 		menuitem(1)
 		menuitem(2)
 	end
 	
-	player.sdx = 0 -- slide direction
+	player.sdx = 0
 	player.sdy = 0
 	player.sframe = 0 -- frame of a slide animation
 	player.sblock = false -- true if sliding block in front of player
 	player.buff = 0 -- buffered key input
-	player.animaldelay = 0 -- slight delay after movement before animals move
+	player.animaldelay = 0
 	player.sprite = index.player
 	player.isvertical = false
 	player.oxygen = -1
@@ -170,18 +150,13 @@ function _init()
 	player.goal = nil
 	player.delay = 0
 	player.delayfunc = nil
-
 	dialog = {}
 	dialogindex = 1
-
-	-- clear sprites between levels
 	sprites = emptyarray(dimensions)
 	animals = emptyarray(dimensions)
 	blocks = emptyarray(dimensions)
 
-	-- config levels
 	if (state.lvl == 0) then
-		-- start menu
 		maprect = {112, 0, dimensions, dimensions, 0, 0}
 		aa(animals, index.rabbit, {2,9,2,10,1,8})
 		aa(animals, index.bbird1, {2,5})
@@ -195,9 +170,7 @@ function _init()
 		exit.x = 8
 		exit.y = 0
 		exit.sprite = index.cexit
-		aas(blocks, {198,3,2,199,4,2,198,5,2}) -- trash cans
-		--aas(sprites, {192,2,7,193,2,4,194,9,7,195,9,4}) -- signs
-
+		aas(blocks, {198,3,2,199,4,2,198,5,2})
 		aas(sprites, {195,9,2})
 		aas(sprites, {201,2,1,202,6,1, 202,1,1})
 		aa(animals, index.rabbit, {4,5,6,6})
@@ -443,10 +416,10 @@ function _init()
 	elseif (state.lvl == 11) then
 		-- end menu
 		maprect = {96, 0, 16, 16, 0, 0}
-		aa(animals, 218, {5,8}) -- hat bunny
-		aa(animals, 217, {12,8}) -- hat monkey
-		aas(sprites, {203,8,7,204,9,7,219,8,8,220,9,8}) --cake
-		aas(blocks, {243,5,10,242,5,12,241,5,14}) --keys
+		aa(animals, 218, {5,8})
+		aa(animals, 217, {12,8})
+		aas(sprites, {203,8,7,204,9,7,219,8,8,220,9,8})
+		aas(blocks, {243,5,10,242,5,12,241,5,14})
 
 		dialog[introphase] = {
 			"noah: finally, home! i get to enjoy the rest of my birthday in peace and quiet!",
@@ -465,14 +438,12 @@ function _init()
 	end
 end
 
--- copy from list of points into the specified array
 function aa(t, s, a)
 	for i=1,#a/2 do
 		t[a[i*2-1]][a[i*2]] = s
 	end
 end
 
--- copy from list of sprite numbers + points into the specified array
 function aas(t, a)
 	for i=1,#a/3 do
 		local s = a[i*3-2]
@@ -486,11 +457,8 @@ function _update60()
 
 	if (state.menu == startmenu) then
 		movestartmenuanimals()
-		
-		-- z/x to start game
 		if (btn(4) or btn(5)) then
 			state.menu = game
-
 			if (state.lvl == 0) state.lvl = 1
 			_init()
 			return
@@ -498,29 +466,38 @@ function _update60()
 	end
 
 	if (state.phase != gamephase and state.menu != startmenu) then
-		while (state.phase != gamephase and (dialog[state.phase] == nil or dialogindex > #dialog[state.phase])) do
+		if (btnp(4) or btnp(5)) then
+			dialogindex += 1
+			return
+		end
+		
+		if (state.phase == advancephase and hasplayedadvance) then
+			state.phase = introphase
+			dialogindex = 1
+			return
+		end
+		
+		if (state.phase == introphase and hasplayedintro) then
+			state.phase = gamephase
+		end
+		
+		if (state.phase == keyitemphase and hasplayedkey) then
+			state.phase = gamephase
+		end
+		
+		if (state.phase == outrophase and hasplayedoutro) then
+			holdframe()
+			nextlevel()
+			return
+		end
+		
+		if (state.phase != gamephase and (dialog[state.phase] == nil or dialogindex > #dialog[state.phase])) do
 			if (state.phase == advancephase) hasplayedadvance = true
 			if (state.phase == introphase) hasplayedintro = true
 			if (state.phase == keyitemphase) hasplayedkey = true
 			if (state.phase == outrophase) hasplayedoutro = true
-			dialogindex = 1
-			
-			if (state.phase == advancephase and hasplayedadvance == true) then
-				state.phase = introphase
-			elseif (hasplayedoutro == true) then
-				nextlevel()
-			else
-				state.phase = gamephase
-			end
-		end
-		
-		if (btnp(4) or btnp(5)) then
-			dialogindex += 1
 		end
 	end
-
-	if (state.phase != gamephase) return
-	if (state.menu == endmenu) return
 
 	-- delay slightly after player death
 	if (player.delay > 0) then
@@ -528,6 +505,9 @@ function _update60()
 		return
 	end
 	if (player.delayfunc != nil) player.delayfunc()
+	
+	if (state.phase != gamephase) return
+	if (state.menu == endmenu) return
 
 	if (checkdeath()) return
 
@@ -558,15 +538,10 @@ function _update60()
 		return
 	end
 
-	-- player is sliding on ice, so update animation until we stop
 	if (player.sdx != 0 or player.sdy != 0) then
-
-		-- update pos every n frames
 		if ((tick % 1) == 0) then
 			player.sframe += 1
 		end
-
-		-- advance player one full grid unit and check if we can continue sliding
 		if (player.sframe > gridsize) then 
 			player.sframe = 0
 			player.x += player.sdx
@@ -586,7 +561,6 @@ function _update60()
 			end
 		end
 	else
-		-- normal player movement
 		local b = btnp()
 		if (b == 0) b = player.buff
 		player.buff = 0
@@ -607,11 +581,7 @@ function _update60()
 			player.oxygen-=1
 
 			if (player.sdx == 0 and player.sdy == 0) then
-				-- didn't start sliding
-				playsound(40)
 				player.animaldelay = 10
-			else
-				playsound(39)
 			end
 		end
 	end
@@ -809,12 +779,6 @@ function draw_level()
 		end
 	end
 
-	-- debug
-	if (blkmsg != nil and blkmsg != 0) then
-		print(blkmsg)
-		blkmsg = nil
-	end
-
 	-- ui
 	if (player.goalneededcount > 0) then
 		local goalstring = player.goal .. player.goalcount .. "/" .. player.goalneededcount
@@ -846,6 +810,14 @@ end
 function nextlevel()
 	state.lvl += 1
 	
+	hasplayedadvance = false
+	hasplayedintro = false
+	hasplayedkey = false
+	hasplayedoutro = false
+	
+	dialogindex = 1
+	state.phase = advancephase
+	
 	if (state.lvl == 11) state.menu = endmenu
 	_init()
 end
@@ -858,15 +830,10 @@ function drawbox(sa)
 	drawdialogbox(sa, 248, 248, 249, 250, false)
 end
 
--- sound turned off until someone who actually knows sounds can redo them
-function playsound(s)
-	--sfx(s)
-end
-
 function splitdialog(text) 
 	if (text == nil) return
 	
-	-- This is a bit hacky but it make the text more natural to enter
+	-- this is a bit hacky but it make the text more natural to enter
 	if (#text) then
 		local str = text
 		
@@ -895,7 +862,7 @@ function splitdialog(text)
 		while index < #str do
 			index += maxwidth -- try to fill an entire line
 			
-			local removedSpace = false
+			local removedspace = false
 			
 			if (index >= #str) then
 				-- remainder of string case
@@ -903,13 +870,13 @@ function splitdialog(text)
 			else
 				if (sub(str, index+1, index+1) == " ") then
 					-- full word should fit
-					removedSpace = true
+					removedspace = true
 				else 
 					local backwards = index
 					while backwards > lastindex do
 						if (sub(str, backwards, backwards) == " ") then
 							index = backwards - 1
-							removedSpace = true
+							removedspace = true
 							break
 						end
 						
@@ -921,7 +888,7 @@ function splitdialog(text)
 			text[lineindex] = sub(str, lastindex, index)
 
 			lastindex = index + 1
-			if (removedSpace == true) then
+			if (removedspace == true) then
 				lastindex += 1
 			end
 			
@@ -1136,13 +1103,13 @@ function movepatrolinganimals()
 
 				-- todo: this is getting out of hand
 				if (a == index.dpenguin or a == index.upenguin) then
-					moveanimal(a, index.upenguin, index.dpenguin, i, j, false, 8)
+					moveanimal(a, index.upenguin, index.dpenguin, i, j, false)
 				elseif (a == index.dbowpenguin or a == index.ubowpenguin) then
-						moveanimal(a, index.ubowpenguin, index.dbowpenguin, i, j, false, 8)
+						moveanimal(a, index.ubowpenguin, index.dbowpenguin, i, j, false)
 				elseif(a == index.lpenguin or a == index.rpenguin) then
-					moveanimal(a, index.lpenguin, index.rpenguin, i, j, true, 8)
+					moveanimal(a, index.lpenguin, index.rpenguin, i, j, true)
 				elseif(a == index.usnake or a == index.dsnake) then
-					moveanimal(a, index.usnake, index.dsnake, i, j, false, 9)
+					moveanimal(a, index.usnake, index.dsnake, i, j, false)
 				end
 
 				if (a==index.fturtle or a==index.flturtle) then
@@ -1246,7 +1213,7 @@ function movebiganimal(a, moved, lf, rf, lb, rb, i, j)
 	end
 end
 
-function moveanimal(a, up, down, i, j, leftright, fx)
+function moveanimal(a, up, down, i, j, leftright)
 	local flipped = nil
 	local dx = 0
 	local dy = 0
@@ -1277,31 +1244,27 @@ function moveanimal(a, up, down, i, j, leftright, fx)
 	else
 		animals[i][j] = flipped
 	end
-
-	if (fx) playsound(fx)
-
 end
 
--- returns (sprite, sfx) if picked up
 function canpickup(x, y)
 	if (isoutsidemap(x, y)) return nil
 
 	-- special case for monkey boss
 	local a = animals[x][y]
-	if (a and (a == index.monkey)) return a, 22
+	if (a and (a == index.monkey)) return a
 
 	local s = sprites[x][y]
 	if (s == nil) return false
 
 	-- instants
-	if (s >= index.key0 and s <= index.key4) return s, 24
-	if (s == index.tank) return s, 22
+	if (s >= index.key0 and s <= index.key4) return s
+	if (s == index.tank) return s
 	
 	-- useable items
 	if (player.helditem) return false
 	
-	if (s == index.bow) return s, 22
-	if (s == index.grad) return s, 22
+	if (s == index.bow) return s
+	if (s == index.grad) return s
 
 	return false
 end
@@ -1309,7 +1272,7 @@ end
 function pickup(x, y)
 	if (isoutsidemap(x, y)) return nil
 
-	local s, fx = canpickup(x,y)
+	local s = canpickup(x,y)
 
 	if (s) then
 		sprites[x][y] = nil
@@ -1329,8 +1292,6 @@ function pickup(x, y)
 			player.helditem = s
 			player.sprite = 188
 		end
-		
-		playsound(fx)
 	else 
 		return nil
 	end
@@ -1470,8 +1431,6 @@ function wearitem(x, y, item)
 end
 
 function checkanimalattack()
-	local killsfx = 0
-
 	local killedbyjelly = false
 	local killed = false
 
@@ -1537,7 +1496,6 @@ function checkanimaleaten()
 	)
 
 	if (eatsfx > 0) then
-		playsound(eatsfx)
 		return true
 	end
 
@@ -1606,9 +1564,6 @@ function placechild(bred, x, y)
 end
 
 function killplayer(s, isshock)
-	if (s) playsound(s)
-
-	--blkmsg = "death"
 	player.delay = 60
 	player.sprite = index.death
 	if (isshock) player.sprite = index.shockdeath
@@ -1616,28 +1571,24 @@ function killplayer(s, isshock)
 end
 
 function checkdeath()
-	-- death by map sprite (e.g. water tile, fire)
 	local s = mgetspr(player.x, player.y)
 	if (band(fget(s), fdeath) > 0) then
 		killplayer(21)
 		return true
 	end
 
-	-- death by animal
 	local killed, jellykilled = checkanimalattack()
 	if (killed or jellykilled) then
 		killplayer(1, jellykilled)
 		return true
 	end
 
-	-- death from nitrogen
 	if (player.oxygen == 0) then
 		killplayer()
 		return true
 	end
-
-	-- death from being surrounded
-	-- this is a hack, should use moveplayer but that has side effects and needs refactored
+	
+	-- should use moveplayer but that has side effects and needs refactored
 	local surrounded = 0;
 	iterateadjacent(function(x, y) 
 		if (isoutsidemap(x, y)) then
@@ -1657,7 +1608,6 @@ function checkdeath()
 	return false
 end
 
--- check if transitioning between these two blocks is a slide movement
 function moveisslide(x, y, dx, dy)	
 	if (band(fget(mgetspr(x, y)), fice) > 0 or band(fget(mgetspr(x+dx, y+dy)), fice) > 0) return true 
 	return false
@@ -1705,7 +1655,6 @@ function canwalkto(x, y, flags)
 	return false
 end
 
--- return true if the player can move to the adjacent block
 function moveplayer(dx, dy)
 	if (player.isvertical) return vmoveplayer(dx, dy)
 
@@ -1721,7 +1670,7 @@ function moveplayer(dx, dy)
 	local nflags = fget(ns)
 
 
-	-- handle normally out of bounds exit tiles (may have 0-index)
+	-- exit tiles may have 0-index
 	if (x == exit.x and y == exit.y and exit.sprite == index.oexit and player.sblock == false) then
 		player.x = x
 		player.y = y
@@ -1761,12 +1710,6 @@ function moveplayer(dx, dy)
 				blocks[x][y] = nil
 				player.sblock = true
 			else
-				--if (band(nflags, fwalkable) > 0 and band(nflags, fwater) == 0) then
-				--	playsound(27, 1)
-				--else
-				--	playsound(29, 1) -- into water
-				--end
-				
 				blocks[nx][ny] = blocks[x][y]
 				blocks[x][y] = nil
 			end
@@ -1775,7 +1718,7 @@ function moveplayer(dx, dy)
 		end
 	end
 
-	-- try to move a turtle vertically
+	-- turtle vertical
 	if (isturtle(x, y) and player.isbubbleslide == false) then
 		if (canpushblockto(nx, ny, nflags)) then
 			local a = animals[x][y]
@@ -1800,7 +1743,6 @@ function moveplayer(dx, dy)
 
 	-- if we are sliding and not currently on ice, stop moving
 	if (player.isbubbleslide == false and (player.sdx != 0 or player.sdy != 0) and band(fget(mgetspr(player.x,player.y)), fice) == 0) return false
-
 
 	-- if we are sliding and now standing on an item, stop moving
 	if ((player.sdx != 0 or player.sdy != 0) and canpickup(player.x, player.y)) return false
@@ -1836,7 +1778,6 @@ function climbable(x, y)
 	return false
 end
 
--- vertical movement, returns true if the player can move
 function vmoveplayer(dx, dy)
 	if (dx == 0 and dy == 0) return false
 
@@ -1849,14 +1790,12 @@ function vmoveplayer(dx, dy)
 	local flags = fget(s)
 	local nflags = fget(ns)
 
-	-- check for exit tile (may be out of bounds)
 	if (x == exit.x and y == exit.y and exit.sprite == index.oexit and player.sblock == false) then
 		player.x = x
 		player.y = y
 		return true
 	end
 
-	-- check if out of bounds
 	if (isoutsidemap(x, y)) return false
 
 	-- stop falling if we can stand here, otherwise keep falling
