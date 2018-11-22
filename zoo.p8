@@ -5,7 +5,6 @@ __lua__
 startmenu = 1
 endmenu = 3
 game = 4
-
 advancephase = "advance"
 introphase = "intro"
 outrophase = "outro"
@@ -13,6 +12,7 @@ keyitemphase = "keyitem"
 gamephase = "game"
 
 state={menu=startmenu,lvl=0,phase=advancephase}
+--state={menu=game,lvl=10,phase=advancephase}
 
 maprect = {}
 player = {}
@@ -23,85 +23,53 @@ dimensions = 16
 textwidth = 4
 
 index = {
-	player = 64,
-	playerscuba = 87,
-	death = 191,
-	shockdeath = 190,
-	
-	playerbow = 185,
-	playergrad = 169,
-	playergradscuba = 168,
-	 
-	block = 58,
-	wblock = 60,
-	dwblock = 61,
-	
-
-	cexit = 210,
-	oexit = 227,
-
-	key0 = 239,
-	key1 = 240,
-	key2 = 241,
-	key3 = 242,
-	key4 = 243,
-
-	tank = 49,
-	bow = 182,
-	bubble = 48,
-	grad = 166,
-	pearl = 134,
-
-	monkey = 120,
-	monkeykeys = 158,
-	monkeyswim = 159,
-
-	lpenguin = 79,
-	rpenguin = 80,
-	dpenguin = 81,
-	dbowpenguin = 183,
-	upenguin = 82,
-	ubowpenguin = 184,
-	
-	fwhale = 105,
-	bwhale = 104,
-
-	fish = 97,
-	gradfish = 167,
-
-	jelly1 = 106,
-	jelly2 = 107,
-	ujelly1 = 108,
-	ujelly2 = 109,
-
-	bturtle = 100,
-	fturtle = 101,
-	blturtle = 103,
-	flturtle = 102,
-
-	rabbit = 115,
-
-	usnake = 124,
-	dsnake = 125,
-
-	pbird1 = 136,
-	pbird2 = 137,
-	pbird3 = 138,
-	pnest = 139,
-	penest = 140,
-
-	bbird1 = 152,
-	bbird2 = 153,
-	bbird3 = 154,
-	bnest = 155,
-	benest = 156,
-
-	ybird1 = 169,
-	ybird2 = 170,
-	ynest = 171,
-	yenest = 172,
-
-	ice = 32,
+player = 64,
+playerscuba = 87,
+death = 191,
+shockdeath = 190,
+playerbow = 185,
+playergrad = 169,
+playergradscuba = 168,
+block = 58,
+wblock = 60,
+dwblock = 61,
+cexit = 210,
+oexit = 227,
+key0 = 239,
+key1 = 240,
+key2 = 241,
+key3 = 242,
+key4 = 243,
+tank = 49,
+bow = 182,
+bubble = 48,
+grad = 166,
+monkey = 120,
+lpenguin = 79,
+rpenguin = 80,
+dpenguin = 81,
+dbowpenguin = 183,
+upenguin = 82,
+ubowpenguin = 184,
+fish = 97,
+gradfish = 167,
+jelly1 = 106,
+jelly2 = 107,
+ujelly1 = 108,
+ujelly2 = 109,
+bturtle = 100,
+fturtle = 101,
+blturtle = 103,
+flturtle = 102,
+rabbit = 115,
+usnake = 124,
+dsnake = 125,
+pbird1 = 136,
+pbird2 = 137,
+bbird1 = 152,
+bbird2 = 153,
+bbird3 = 154,
+ice = 32,
 }
 
 dialog = {}
@@ -272,8 +240,9 @@ function _init()
 		dialog[introphase] = {
 			"animation: 7.1",
 			"noah: well, i guess *most monkeys* can't swim, but this one can!",
-			"noah: mackers get back here!",
 			"animation: 7.2",
+			"noah: mackers get back here!",
+			"animation: 7.3",
 			"noah: agh. i'm not a great diver but i have to get that key!",
 			"noah: good thing all these oxygen tanks are scattered around the aquarium.",
 			"noah: i wonder if these jellyfish sting..."
@@ -351,6 +320,7 @@ function _init()
 		dialog[introphase] = {
 			"animation: 3.1",
 			"noah: stop monkeying around! you're on thin ice mackers!",
+			"animation: 3.2",
 			"noah: oh this ice is slippery. how do these cute penguins waddle around so easily?"
 			}
 		player.goal = "goal: collect orange key"
@@ -431,10 +401,11 @@ function _init()
 		}
 		
 		dialog[introphase] = {
-			"noah: there you are mackers! i'm coming to get you!"
+			"noah: there you are mackers! i'm coming to get you!",
+			"noah: now this whale exhibit seems not whale made. there are tons of holes in the ice!"
 		}
 		dialog[keyitemphase] = {
-			"noah: ha, ha! caught yea! give me the rest of my keys you little squirt! i want to go home! it's my birthday, ya know!"
+			"noah: haha, caught yea! give me the rest of my keys you little squirt! i can't believe you did this to me mackers. on my birthday! rude."
 		}
 		player.goal = "goal: get the %\x8f$\x92 monkey"
 	elseif (state.lvl == 11) then
@@ -525,52 +496,60 @@ function _update60()
 		end
 	end
 
-	-- delay slightly after player death
 	if (player.delay > 0) then
 		player.delay -= 1
 		return
 	end
 	if (player.delayfunc != nil) player.delayfunc()
 
-	-- update animations
 	if (dialog[state.phase] and dialogindex <= #dialog[state.phase]) then
 		local dx = splitdialog(dialog[state.phase][dialogindex])
-		if (dx and dx[1] == "animation") then 
-			if (dx[2] == "1.1") then
+		if (dx and dx[1] == "animation") then
+			local a = dx[2]
+			if (a == "1.1") then
 				key = sprites[4][1]
 				sprites[4][1] = nil
 				animations[4][8] = 95
 				animations[3][8] = 110
 				animations[2][8] = 94
-			elseif (dx[2] == "1.2") then
-				animations = emptyarray(dimensions)
-			elseif (dx[2] == "1.3") then
-				animations[4][8] = index.monkey
-			elseif (dx[2] == "1.4") then
-				animations[4][8] = 158
-			elseif (dx[2] == "1.5") then
+			end
+			if (a == "1.2") animations = emptyarray(dimensions)
+			if (a == "1.3") animations[4][8] = index.monkey
+			if (a == "1.4") animations[4][8] = 158
+			if (a == "1.5") then
 				animations[4][8] = nil
 				animations[3][1] = 158
-			elseif (dx[2] == "1.6") then
-				sprites[4][1] = key
-			elseif (dx[2] == "1.7") then
-				animations[3][1] = nil
-				
-			elseif (dx[2] == "2.1") then
-				key = sprites[3][5]
-				animations[3][2] = 158
-			elseif (dx[2] == "2.2") then
-				sprites[3][5] = key
-				animations[3][2] = nil
-				
 			end
-			
+			if (a == "1.6") sprites[4][1] = key
+			if (a == "1.7") animations[3][1] = nil
+			if (a == "2.1") animations[3][2] = 158
+			if (a == "2.2") animations[3][2] = nil
+			if (a == "3.1") animations[6][2] = 158
+			if (a == "3.2") animations[6][2] = nil
+			if (a == "6.1") then
+				key = sprites[3][6]
+				sprites[3][6] = nil
+				animations[3][6] = 158
+			elseif (a == "6.2") then
+				sprites[3][6] = key
+				animations[3][6] = nil
+			elseif (a == "7.1") then
+				key = sprites[4][11]
+				sprites[4][11] = nil
+				animations[4][5] = 159
+			elseif (a == "7.2") then
+				sprites[4][5] = key
+				animations[4][5] = nil
+				animations[1][1] = 159
+			elseif (a == "7.3") then
+				sprites[4][5] = nil
+				sprites[4][11] = key
+				animations[1][1] = nil
+			end
+			if (a == "8.1") animations[1][1] = 159
+			if (a == "8.2") animations[1][1] = nil
 			dialogindex += 1
 		end
-		
-		-- delay and animate
-	else
-		--animations = emptyarray(dimensions)
 	end
 
 	
@@ -737,8 +716,7 @@ end
 function draw_endmenu()
 	cls()
 
-	-- draw map
-	map(maprect[1], maprect[2], maprect[5]*gridsize, maprect[6]*gridsize, maprect[3], maprect[4])
+	if (state.phase != advancephase) map(maprect[1], maprect[2], maprect[5]*gridsize, maprect[6]*gridsize, maprect[3], maprect[4])
 
 	-- draw dialog
 	if (state.phase != gamephase and dialog[state.phase]) then
@@ -747,7 +725,7 @@ function draw_endmenu()
 		drawbox(dx)
 	end
 
-	if (state.phase == introphase and dialogindex < 2) return
+	if (state.phase == advancephase) return
 
 	-- draw sprites
 	iteratemap(
@@ -1122,8 +1100,6 @@ function drawoutline(s, x, y)
 		for j=0,7 do
 			local px = (s%16)*8+i
 			local py = flr(s/16)*8 + j
-
-			-- this doesn't check if we've already drawn at a location since it's less lines of code
 			if (sget(px,py) > 0) then
 				rect(x+i-1, y+j, x+i+1, y+j, 5)
 				rect(x+i, y+j-1, x+i, y+j+1, 5)
