@@ -176,8 +176,9 @@ function _init()
 		aa(animals, index.rabbit, {4,5,6,6})
 		aa(sprites, index.key1, {4,1})
 		dialog[advancephase] = {
-			"announcer: birnam zoo will be closing in 5 minutes.",
+			"announcer: birnam zoo will be closing in 5 minutes."
 		}
+		
 		dialog[introphase] = {
 			"noah: *huffs* finally",
 			"noah: alright folks, it's closing time!",
@@ -185,15 +186,17 @@ function _init()
 			"mom: now kids what do you say to noah the zookeeper for showing us around today?",
 			"kids: thank you noah!",
 			"noah: no problem see you next time!",
+			"<parent and 2 kids leave through the gate. when they've left the screen>",
 			"noah: i thought this day would never end! i can finally go home.",
-			"<mackers1>",
+			"<(animation of noah going to board and seeing a note)>",
 			"noah: did my boss leave me another one of her \"helpful\" notes. what is it this time...",
 			"note on door: noah can you please lock the office when you're done? had to leave early. sorry! exhibits should be locked already!                    ~karen",
-			"<mackers2>",
+			"<(while reading note, mackers comes to noah and grabs noah's keys.>",
 			"noah: of course. perfect. wait where are my keys? they were on my belt a second ago..",
+			"<(mackers runs around screen, through bushes, drops yellow key behind trash can then runs out the door)>",
 			"<mackers3>",
 			"noah: mackers has them! you stupid monkey come back here!",
-			"noah: of course. he dropped one of the keys behind the trash cans. let's see if i can manage to grab it without running into those prickly rose bushes."
+			"noah: of course. he dropped one of the keys behind the trash cans. let's see if i can manage to grab it without running into those prickly rose bushes.",
 		}
 		
 		dialog[keyitemphase] = {"noah: the key to the bunny enclosures! now i have to go through this whole zoo to catch that *#%$ monkey! he went right through this door..."}
@@ -213,9 +216,11 @@ function _init()
 		dialog[introphase] = {
 			"<mackers2.1>",
 			"noah: wait! at least he dropped the tundra key before he left.",
-			"noah: why are all these crates laying in the middle of the bunny enclosure? i am the only one who does any work here?"}
-		dialog[keyitemphase] = {"noah: the key to the tundra! guess i can go follow him or mess around here for a bit..."}
-		player.goal = "goal: collect pink key"
+			"noah: why are all these crates laying in the middle of the bunny enclosure? i am the only one who does any work here?",
+		}
+			
+		dialog[outrophase] = {"noah: the key to the tundra! guess i can go follow him or mess around here for a bit..."}
+		player.goal = "goal: collect orange key"
 	elseif (state.lvl == 6) then
 		-- rainforest 1
 		maprect = {0, 8, 8, 8, 4, 4}
@@ -230,13 +235,12 @@ function _init()
 		animals[2][5] = index.usnake
 		dialog[introphase] = {
 			"noah: it sure is high up here in the trees! there you are mackers!",
-			"<mackers6.1>",
-			"noah: no wait! i'm scared of heights! get me down!"
-		}
-		dialog[keyitemphase] = {
+			"<mackers runs around and drops the key>",
+			"noah: no wait! i'm scared of heights! get me down!",
 			"noah: oh great, it looks like he dropped another key...",
 			"noah: right next to that not so friendly looking snake!",
 		}
+
 		dialog[outrophase] = {
 			"noah: the key to the aquarium! he can't get far! monkeys can't swim... right?"
 		}
@@ -256,8 +260,8 @@ function _init()
 		aa(sprites, index.tank, {4,6,5,11,6,8,3,5,3,1})
 		dialog[introphase] = {
 			"noah: well, i guess *most monkeys* can't swim, but this one can! mackers get back here!",
-			"<mackers7.1>",
-			"noah: agh. i'm not a great diver but i have to get that key!  good thing all these oxygen tanks are scattered around the aquarium. i wonder if these jellyfish sting..."
+			"<(mackers runs around and drops the key)>",
+			"noah: agh. i'm not a great diver but i have to get that key! good thing all these oxygen tanks are scattered around the aquarium. i wonder if these jellyfish sting..."
 		}
 		player.goal = "goal: get red key"
 	elseif (state.lvl == 8) then
@@ -275,7 +279,7 @@ function _init()
 		aa(sprites, index.tank, {2,5, 3,6, 5,4})
 		dialog[introphase] = {
 			"noah: mackers, when did you learn to scuba dive?",
-			"<mackers8.1>",
+			"<(mackers swims away)>",
 			"noah: oh, one of those stubborn turtles looks hungry. sometimes they just need a push in the right direction...don't we all?",
 		}
 		dialog[outrophase] = {
@@ -304,20 +308,18 @@ function _init()
 		aa(animals, index.fish, {8,1,9,1,6,8,7,8})
 		aa(animals, index.jelly1, {4,3,5,3,6,6,7,6})
 		dialog[advancephase] = {
-			"noah: i need this day to be over.",
-			"noah: where is that %$\x8f#\x92 monkey?",
-			"karen: noah? are you still at the zoo?",
-			"noah: yes, karen.",
-			"noah: i haven't left yet. i'm just about to leave now-",
-			"karen: oh, not yet! please make sure the penguins are ready for the evening before you go. they are in the tundra.",
-			"noah: i know where the penguins are, karen. i work here.",
-			"karen: great! their bowties are in the tundra too!",
-			"noah: bowties? where are these penguins going, the opera?",
-			"noah: karen?",
+			"karen: noah, do you copy?",
+			"noah: karen? i'm a bit underwater at the moment...",
+			"karen: you're in the aquarium? perfect!",
+			"karen: the schools of fish passed all their tests today!",
+			"karen: can you make sure they graduate before you leave?",
+			"karen: they need their graduation caps. thx!",
+			"noah: can't it wait till tomorrow? karen?",
 		}
 
 		dialog[introphase] = {
-			"noah: ..."
+			"noah: karen?",
+			"noah: oh, well, i'm here anyway...",
 		}
 		player.goal = "fish grads:"
 	elseif (state.lvl == 3) then
@@ -331,11 +333,11 @@ function _init()
 		sprites[7][4] = index.key0
 		aa(animals, index.dpenguin, {3,1,4,1,5,1})	
 		dialog[introphase] = {
-			"<mackers3.1>",
+			"<(animation of mackers dropping key and running out of the door)>",
 			"noah: stop monkeying around! you're on thin ice mackers!",
 			"noah: oh this ice is slippery. how do these cute penguins waddle around so easily?"
 			}
-		player.goal = "goal: collect red key"
+		player.goal = "goal: collect orange key"
 	elseif (state.lvl == 4) then
 		-- tundra 2 - new level
 		maprect = {27, 0, 11, 8, 2, 2}
@@ -366,7 +368,7 @@ function _init()
 			"noah: you're going to look great. ",
 		}
 		dialog[outrophase] = {
-			"noah: looking dapper, kids! great. time to get out of here...now where are the rest of my keys",
+			"noah: looking dapper, kids! great. time to get out of here... now where are the rest of my keys",
 		}
 		player.goal = "goal: bow ties "
 	elseif (state.lvl == 5) then
@@ -405,12 +407,19 @@ function _init()
 		aas(animals, {index.monkey,6,2})
 		aa(blocks, index.block, {5,8,6,11})
 
+		dialog[advancephase] = {
+			"noah: what a touching graduation ceremony...for fish. now where is that monkey?",
+			"karen: uh...noah? are you almost done?",
+			"noah: yes karen, why do you have some other not-so-little thing for me to do?",
+			"karen: nope, just wondering when you might be making your way home",
+			"noah: ideally? about 2 hours ago karen but i have just one more thing to do...",
+		}
+		
 		dialog[introphase] = {
-			"noah: .."
+			"noah: there you are mackers! i'm coming to get you!"
 		}
 		dialog[keyitemphase] = {
-			"noah: finally!",
-			"monkey: the monkey looks defeated."
+			"noah: ha, ha! caught yea! give me the rest of my keys you little squirt! i want to go home! it's my birthday, ya know!"
 		}
 		player.goal = "goal: get the %\x8f$\x92 monkey"
 	elseif (state.lvl == 11) then
@@ -425,12 +434,12 @@ function _init()
 			"noah: finally, home! i get to enjoy the rest of my birthday in peace and quiet!",
 			"karen and coworkers: surprise! happy birthday!",
 			"noah: karen? what are you and all the other zookeepers doing here? i thought you left early-",
-			"karen and coworkers: we were getting ready for your party silly. we had to stall!",
-			"noah: mackers stealing my keys?",
+			"karen and coworkers: we were getting ready for your party silly. we had to stall you!",
+			"noah: you were stalling? what about the crates and penguins?",
 			"coworkers: that was us.",
-			"noah: the fish and the penguins?",
+			"noah: the whole fishy graduation ceremony?",
 			"coworkers: yup. us too!",
-			"noah: the fire kitsune?",
+			"noah: and you were responsible for mackers stealing my keys in the first place?!",
 			"coworkers: you sound mad...",
 			"noah: get out.",
 			":             the end",
